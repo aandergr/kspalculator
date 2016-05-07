@@ -5,12 +5,15 @@ import parts
 
 class Design:
     def printinfo(self):
+        # TODO: print() is not so good for this
         print("mass: %i kg" % self.mass)
         print("cost: %i" % self.cost)
         print("min_acceleration: %.1f m/s^2" % self.min_acceleration)
         print("engine: %s" % self.eng.name)
         print("fuel: %i kg (tank weight)" % self.fuel)
+        print("gimbal: %.1f °" % self.eng.tvc)
         print("%s" % self.size)
+        print("%s" % self.eng.level)
         
 def lf_needed_fuel(delta_v, I_sp, m_p):
     def f(m_f):

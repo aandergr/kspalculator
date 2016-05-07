@@ -8,10 +8,40 @@ class RadialSize(Enum):
     ExtraLarge = 4
     RadialMounted = 9
 
+class ResearchNode(Enum):
+    # only relevant nodes yet
+    Start = 11
+    BasicRocketry = 21
+    GeneralRocketry = 31
+    AdvancedRocketry = 41
+    HeavyRocketry = 51
+    PropulsionSystems = 52
+    HeavierRocketry = 61        # depends on HeavyRocketry
+    PrecisionPropulsion = 62    # depends on PropulsionSystems
+    VeryHeavyRocketry = 81      # depends on HeavierRocketry or LargeVolumeContainment
+    HyperSonicFlight = 82       # depends on Aerodynamics
+    AerospaceTech = 91          # depends on HypersonicFlight
+
+    def DependsOn(self, a):
+        if self is a:
+            return True
+        if (self is ResearchNode.VeryHeavyRocketry) or (self is HyperSonicFlight) or (self is ResearchNode.AerospaceTech):
+            # interestingly, these nodes can be reached without having
+            # researched the other *Rocketry technologies.
+            if a is ResearchNode.Start:
+                return True
+            else:
+                return False
+        if self is ResearchNode.PrecisionPropulsion:
+            if a is ResearchNode.PropulsionSystems or a.value <= 41:
+                return True
+            else:
+                return False
+        return a.value+10 <= self.value
+
 # TODO: Add adapters, solid fuel boosters, etc.
 
-LiquidFuelEngine = namedtuple('LiquidFuelEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac', 'F_atm', 'F_vac'])
-# TODO: add more parameters to optimize for
+LiquidFuelEngine = namedtuple('LiquidFuelEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac', 'F_atm', 'F_vac', 'tvc', 'level'])
 
 # TODO: support radially mounted engines
 # TODO: support monopropellant engines
@@ -20,19 +50,19 @@ LiquidFuelEngine = namedtuple('LiquidFuelEngine', ['size', 'name', 'cost', 'm', 
 # TODO: support engines which have tank included
 
 LiquidFuelEngines = [
-        LiquidFuelEngine(RadialSize.Tiny,  'LV-1 Ant',       110,  20,   80,  315, 510,    2000),
-        LiquidFuelEngine(RadialSize.Tiny,  '48-7S Spark',    200,  100,  270, 300, 16200,  18000),
-        LiquidFuelEngine(RadialSize.Small, 'LV-909 Terrier', 390,  500,  85,  345, 14783,  60000),
-        LiquidFuelEngine(RadialSize.Small, 'LV-T30 Reliant', 1100, 1250, 280, 300, 200670, 215000),
-        LiquidFuelEngine(RadialSize.Small, 'LV-T45 Swivel',  1200, 1500, 270, 320, 168750, 200000),
-        LiquidFuelEngine(RadialSize.Small, 'S3 KS-25 Vector',18000,4000, 295, 315, 936500, 1000000),
-        LiquidFuelEngine(RadialSize.Small, 'CR7 RAPIER',     6000, 2000, 275, 305, 162300, 180000),
-        LiquidFuelEngine(RadialSize.Small, 'T-1 Dart',       3850, 1000, 290, 340, 153530, 180000),
-        LiquidFuelEngine(RadialSize.Large, 'RE-L10 Poodle',  1300, 1750, 90,  350, 64290,  250000),
-        LiquidFuelEngine(RadialSize.Large, 'RE-I5 Skipper',  5300, 3000, 280, 320, 568750, 650000),
-        LiquidFuelEngine(RadialSize.Large, 'RE-M3 Mainsail', 13000,6000, 285, 320, 1379000,1500000),
-        LiquidFuelEngine(RadialSize.ExtraLarge, 'KR-2L+ Rhino', 25000,9000, 255, 340, 1500000,2000000),
-        LiquidFuelEngine(RadialSize.ExtraLarge, 'KS-25x4 Mammoth', 39000,15000, 295, 315, 3746000,4000000) ]
+        LiquidFuelEngine(RadialSize.Tiny,  'LV-1 Ant',       110,  20,   80,  315, 510,    2000,   0, ResearchNode.PropulsionSystems),
+        LiquidFuelEngine(RadialSize.Tiny,  '48-7S Spark',    200,  100,  270, 300, 16200,  18000,  3, ResearchNode.PropulsionSystems),
+        LiquidFuelEngine(RadialSize.Small, 'LV-909 Terrier', 390,  500,  85,  345, 14783,  60000,  4, ResearchNode.AdvancedRocketry),
+        LiquidFuelEngine(RadialSize.Small, 'LV-T30 Reliant', 1100, 1250, 280, 300, 200670, 215000, 0, ResearchNode.BasicRocketry),
+        LiquidFuelEngine(RadialSize.Small, 'LV-T45 Swivel',  1200, 1500, 270, 320, 168750, 200000, 3, ResearchNode.GeneralRocketry),
+        LiquidFuelEngine(RadialSize.Small, 'S3 KS-25 Vector',18000,4000, 295, 315, 936500, 1000000,10.5,ResearchNode.VeryHeavyRocketry),
+        LiquidFuelEngine(RadialSize.Small, 'CR7 RAPIER',     6000, 2000, 275, 305, 162300, 180000, 3, ResearchNode.AerospaceTech),
+        LiquidFuelEngine(RadialSize.Small, 'T-1 Dart',       3850, 1000, 290, 340, 153530, 180000, 0, ResearchNode.HyperSonicFlight),
+        LiquidFuelEngine(RadialSize.Large, 'RE-L10 Poodle',  1300, 1750, 90,  350, 64290,  250000, 4.5,ResearchNode.HeavyRocketry),
+        LiquidFuelEngine(RadialSize.Large, 'RE-I5 Skipper',  5300, 3000, 280, 320, 568750, 650000, 2, ResearchNode.HeavyRocketry),
+        LiquidFuelEngine(RadialSize.Large, 'RE-M3 Mainsail', 13000,6000, 285, 320, 1379000,1500000,2, ResearchNode.HeavierRocketry),
+        LiquidFuelEngine(RadialSize.ExtraLarge, 'KR-2L+ Rhino', 25000,9000, 255, 340, 1500000,2000000,4,ResearchNode.VeryHeavyRocketry),
+        LiquidFuelEngine(RadialSize.ExtraLarge, 'KS-25x4 Mammoth', 39000,15000, 295, 315, 3746000,4000000,2,ResearchNode.VeryHeavyRocketry) ]
 
 
 # liquid fuel tank quantities.
