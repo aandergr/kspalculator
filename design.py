@@ -17,7 +17,7 @@ class Design:
         print("%s" % self.size)
         print("%s" % self.eng.level)
         print("IsBest: %r" % self.IsBest)
-    def IsBetterThan(self, a, bestgimbal):
+    def IsBetterThan(self, a, preferredsize, bestgimbal):
         """
         Returns True if self is better than a by any parameter, i.e. there might
         be a reason to use self instead of a.
@@ -33,6 +33,10 @@ class Design:
                 return True
         else:
             if self.eng.tvc > 0.0 and a.eng.tvc == 0.0:
+                return True
+        # this is where user's size preferrence comes in
+        if preferredsize is not None:
+            if self.size is preferredsize and a.size is not preferredsize:
                 return True
         # check if self uses simpler technology
         if a.eng.level is not self.eng.level and a.eng.level.DependsOn(self.eng.level):
@@ -112,14 +116,13 @@ def CreateRadialLFEnginesDesign(payload, pressure, dv, eng, size, count):
 
 # TODO: support delta-v with different pressure
 
-def FindDesigns(payload, pressure, dv, min_acceleration, bestgimbal = False):
+def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, bestgimbal = False):
     """
     pressure: 0 = vacuum, 1 = kerbin
     """
     designs = []
     for eng in parts.LiquidFuelEngines:
         if eng.size is parts.RadialSize.RdMntd:
-            # TODO: this way Tiny almost always wins, that's not so good
             for size in [parts.RadialSize.Tiny, parts.RadialSize.Small, parts.RadialSize.Large, parts.RadialSize.ExtraLarge]:
                 for count in [2, 3, 4, 6, 8]:
                     d = CreateRadialLFEnginesDesign(payload, pressure, dv, eng, size, count)
@@ -134,7 +137,7 @@ def FindDesigns(payload, pressure, dv, min_acceleration, bestgimbal = False):
     for d in designs:
         d.IsBest = True
         for e in designs:
-            if (d is not e) and (not d.IsBetterThan(e, bestgimbal)):
+            if (d is not e) and (not d.IsBetterThan(e, preferredsize, bestgimbal)):
                 d.IsBest = False
                 break
 
