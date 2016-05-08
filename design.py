@@ -1,5 +1,5 @@
 from math import ceil, log
-from scipy.optimize import newton
+from scipy.optimize import fsolve
 
 import parts
 
@@ -44,10 +44,16 @@ class Design:
             return True
         return False
 
-def lf_needed_fuel(delta_v, I_sp, m_p):
-    def f(m_f):
-        return delta_v - (I_sp * 9.81 * log((m_p+m_f+m_f/8)/(m_p+m_f/8)))
-    return newton(f, 0)
+def lf_needed_fuel(dv, I_sp, m_p):
+    g_0 = 9.81
+    f_e = 1/8   # empty weight fraction
+    def equations(m):
+        N = len(m)
+        y =     [I_sp[i] * g_0 * log((m_p + m[0]*f_e + m[i])/(m_p + m[0]*f_e + m[i+1])) - dv[i] for i in range(N-1)]
+        y.append(I_sp[N-1]*g_0 * log((m_p + m[0]*f_e + m[N-1])/(m_p+m[0]*f_e)) - dv[N-1])
+        return y
+    sol = fsolve(equations, [0 for i in range(len(I_sp))])
+    return sol[0]
 
 # TODO: unify design creation
 
@@ -58,8 +64,8 @@ def CreateSingleLFEngineDesign(payload, pressure, dv, eng):
     design.eng = eng
     design.engcount = 1
     design.size = eng.size
-    isp = pressure*eng.isp_atm + (1-pressure)*eng.isp_vac
-    F = pressure*eng.F_atm + (1-pressure)*eng.F_vac
+    isp = [pressure[i]*eng.isp_atm + (1-pressure[i])*eng.isp_vac for i in range(len(pressure))]
+    F = pressure[0]*eng.F_atm + (1-pressure[0])*eng.F_vac
     lf = lf_needed_fuel(dv, isp, design.mass)
     lf = lf * 9/8
     # we only consider tanks with same radial size as engine.
@@ -87,8 +93,8 @@ def CreateRadialLFEnginesDesign(payload, pressure, dv, eng, size, count):
     design.eng = eng
     design.engcount = count
     design.size = size
-    isp = pressure*eng.isp_atm + (1-pressure)*eng.isp_vac
-    F = count * (pressure*eng.F_atm + (1-pressure)*eng.F_vac)
+    isp = [pressure[i]*eng.isp_atm + (1-pressure[i])*eng.isp_vac for i in range(len(pressure))]
+    F = count * (pressure[0]*eng.F_atm + (1-pressure[0])*eng.F_vac)
     lf = lf_needed_fuel(dv, isp, design.mass)
     lf = lf * 9/8
     smalltankcount = ceil(lf / parts.RocketFuelTanks[parts.SmallestTank[size]].m_full)
@@ -111,6 +117,7 @@ def CreateRadialLFEnginesDesign(payload, pressure, dv, eng, size, count):
 # TODO: add ship designs using atomic rocket motor, monopropellant engine, ion engine
 # TODO: add ship radially mounted fuel tank + engine combinations
 # TODO: add ship design with solid fuel booster
+# TODO: add asparagous designs
 
 # TODO: consider ship width and adapters
 

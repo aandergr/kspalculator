@@ -2,11 +2,19 @@
 
 from argparse import ArgumentParser
 
-parser = ArgumentParser(description='Determine best rocket design')
+epilog = """
+deltav:pressure tuples:
+You specify which delta-v (in m/s) at which pressure (0.0 = vacuum, 1.0 = ATM)
+your ship must be able to reach. You might specify more than one of these
+tuples. This might be useful if you're going to fly through different
+environments, e.g. starting in atmosphere and later flying through vacuum.
+"""
+
+parser = ArgumentParser(description='Determine best rocket design', epilog=epilog)
 parser.add_argument('payload', type=float, help='Payload in kg')
-parser.add_argument('deltav', type=float, help='Required Delta-V in m/s')
-parser.add_argument('acceleration', type=float, help='Required minimum acceleration')
-parser.add_argument('pressure', type=float, help='Air pressure, 0.0 = vacuum, 1.0 = kerbin surface')
+parser.add_argument('acceleration', type=float, help='Required minimum acceleration in m/s^2')
+parser.add_argument('dvtuples', metavar='deltav:pressure', nargs='+', help='deltav:pressure tuples')
+# TODO: implement type check for dvtuples
 parser.add_argument('-c', '--cheapest', action='store_true', help='Sort by cost instead of weight')
 parser.add_argument('-S', '--preferred-size', choices=['tiny', 'small', 'large', 'extralarge'], help='Preferred width of the stage')
 parser.add_argument('-b', '--best-gimbal', action='store_true', help='Not only compare whether engine has gimbal or not, but also the maximum trust vectoring angle')
@@ -14,8 +22,8 @@ parser.add_argument('--keep', action='store_true', help='Do not hide bad solutio
 
 args = parser.parse_args()
 
-# we have the import here to have short execution time in case of calling with
-# e.g. '-h' only.
+# we have the import here (instead of above) to have short execution time in
+# case of calling with e.g. '-h' only.
 from design import FindDesigns
 from parts import RadialSize
 
@@ -30,7 +38,10 @@ if args.preferred_size is not None:
     else:
         ps = RadialSize.ExtraLarge
 
-all_designs = FindDesigns(args.payload, args.pressure, args.deltav, args.acceleration, ps, args.best_gimbal)
+dv = [float(s.partition(':')[0]) for s in args.dvtuples]
+pr = [float(s.partition(':')[2]) for s in args.dvtuples]
+
+all_designs = FindDesigns(args.payload, pr, dv, args.acceleration, ps, args.best_gimbal)
 
 if args.keep:
     D = all_designs
