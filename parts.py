@@ -6,7 +6,7 @@ class RadialSize(Enum):
     Small = 2
     Large = 3
     ExtraLarge = 4
-    RadialMounted = 9
+    RdMntd = 9      # radially mounted
 
 class ResearchNode(Enum):
     # only relevant nodes yet
@@ -52,6 +52,9 @@ LiquidFuelEngine = namedtuple('LiquidFuelEngine', ['size', 'name', 'cost', 'm', 
 # TODO: support engines which have tank included
 
 LiquidFuelEngines = [
+        LiquidFuelEngine(RadialSize.RdMntd,'LV-1R Spider',   120,  20,   260, 290, 1793,   2000,   8, ResearchNode.PrecisionPropulsion),
+        LiquidFuelEngine(RadialSize.RdMntd,'24-77 Twitch',   400,  90,   250, 290, 13793,  16000,  8, ResearchNode.PrecisionPropulsion),
+        LiquidFuelEngine(RadialSize.RdMntd,'Mk-55 Thud',     820,  900,  275, 305, 108200, 120000, 8, ResearchNode.AdvancedRocketry),
         LiquidFuelEngine(RadialSize.Tiny,  'LV-1 Ant',       110,  20,   80,  315, 510,    2000,   0, ResearchNode.PropulsionSystems),
         LiquidFuelEngine(RadialSize.Tiny,  '48-7S Spark',    200,  100,  270, 300, 16200,  18000,  3, ResearchNode.PropulsionSystems),
         LiquidFuelEngine(RadialSize.Small, 'LV-909 Terrier', 390,  500,  85,  345, 14783,  60000,  4, ResearchNode.AdvancedRocketry),
