@@ -81,10 +81,7 @@ def FindDesigns(payload, pressure, dv, min_acceleration):
         d.IsBest = True
         for e in designs:
             if (d is not e) and (not d.IsBetterThan(e)):
-                print("%i is not better than %i." % (d.mass, e.mass))
                 d.IsBest = False
                 break
-
-    # TODO: sort
 
     return designs
