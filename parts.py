@@ -25,7 +25,9 @@ class ResearchNode(Enum):
     def DependsOn(self, a):
         if self is a:
             return True
-        if (self is ResearchNode.VeryHeavyRocketry) or (self is HyperSonicFlight) or (self is ResearchNode.AerospaceTech):
+        if  (self is ResearchNode.VeryHeavyRocketry) or \
+            (self is ResearchNode.HyperSonicFlight) or \
+            (self is ResearchNode.AerospaceTech):
             # interestingly, these nodes can be reached without having
             # researched the other *Rocketry technologies.
             if a is ResearchNode.Start:
