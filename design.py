@@ -6,17 +6,18 @@ import parts
 class Design:
     # TODO: invent better data structure for this thing
     def printinfo(self):
-        # TODO: print() is not so good for this
-        print("mass: %i kg" % self.mass)
-        print("cost: %i" % self.cost)
-        print("min_acceleration: %.1f m/s^2" % self.min_acceleration)
+        if self.engcount == 1:
+            print("%s" % self.eng.name)
+        else:
+            print("%i * %s, radially mounted" % (self.engcount, self.eng.name))
+        print("\ttotal mass: %i kg (including payload)" % self.mass)
+        print("\tcost: %i" % self.cost)
+        print("\tmin_acceleration: %.1f m/s^2" % self.min_acceleration)
         # TODO: print delta v
-        print("engine: %s * %i" % (self.eng.name, self.engcount))
-        print("fuel: %i kg (tank weight)" % self.fuel)
-        print("gimbal: %.1f °" % self.eng.tvc)
-        print("%s" % self.size)
-        print("%s" % self.eng.level)
-        print("IsBest: %r" % self.IsBest)
+        print("\tfuel: %i units (%i kg full tank weight)" % (self.fuel*8/9*0.2, self.fuel))
+        print("\tgimbal: %.1f °" % self.eng.tvc)
+        print("\t%s" % self.size)
+        print("\t%s" % self.eng.level)
     def IsBetterThan(self, a, preferredsize, bestgimbal):
         """
         Returns True if self is better than a by any parameter, i.e. there might
@@ -107,7 +108,6 @@ def CreateRadialLFEnginesDesign(payload, pressure, dv, eng, size, count):
     design.min_acceleration = F / design.mass
     return design
 
-# TODO: add ship design with radially mounted liquid fuel engines
 # TODO: add ship designs using atomic rocket motor, monopropellant engine, ion engine
 # TODO: add ship radially mounted fuel tank + engine combinations
 # TODO: add ship design with solid fuel booster
