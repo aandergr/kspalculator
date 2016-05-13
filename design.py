@@ -86,7 +86,7 @@ def engine_isp(eng, pressure):
     return [pressure[i]*eng.isp_atm + (1-pressure[i])*eng.isp_vac for i in range(len(pressure))]
 
 def engine_force(eng, pressure):
-    return pressure[0]*eng.F_atm + (1-pressure[0])*eng.F_vac
+    return pressure[0]*eng.F_vac*eng.isp_atm/eng.isp_vac + (1-pressure[0])*eng.F_vac
 
 # TODO: simplify design creation even more
 
