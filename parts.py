@@ -1,6 +1,8 @@
 from collections import namedtuple
 from enum import Enum
 
+# Source: http://wiki.kerbalspaceprogram.com/wiki/Parts
+
 class RadialSize(Enum):
     Tiny = 1
     Small = 2
@@ -41,11 +43,9 @@ class ResearchNode(Enum):
                 return False
         return a.value+10 <= self.value
 
-# TODO: Add adapters, solid fuel boosters, etc.
-
 LiquidFuelEngine = namedtuple('LiquidFuelEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac', 'F_vac', 'tvc', 'level'])
+# TODO: consider that engines generating electricity are advantageous
 
-# TODO: support radially mounted engines
 # TODO: support monopropellant engines
 # TODO: support ion engines
 # TODO: support atomic engines
@@ -76,6 +76,8 @@ LiquidFuelEngines = [
 
 RocketFuelTank = namedtuple('RocketFuelTank', ['size', 'cost', 'm_full'])
 
+# TODO: support adapter tanks
+
 RocketFuelTanks = [
         RocketFuelTank(RadialSize.Tiny, 70, 225),               # 0
         RocketFuelTank(RadialSize.Small, 150, 562.5),           # 1
@@ -93,3 +95,23 @@ RocketFuelTanks = [
 SmallestTank = { RadialSize.Tiny : 0, RadialSize.Small: 1, RadialSize.Large: 5, RadialSize.ExtraLarge: 9 }
 BiggestTank =  { RadialSize.Tiny : 0, RadialSize.Small: 4, RadialSize.Large: 8, RadialSize.ExtraLarge: 11 }
 
+SolidFuelBooster = namedtuple('SolidFuelBooster', ['name', 'cost', 'm_full', 'm_empty', 'isp_atm', 'isp_vac', 'F_vac', 'level'])
+
+SolidFuelBoosters = [
+        SolidFuelBooster('RT-5 Flea',    200,  1500,  450,  140, 165, 192000, ResearchNode.Start),
+        SolidFuelBooster('RT-10 Hammer', 400,  3560,  750,  170, 195, 227000, ResearchNode.BasicRocketry),
+        SolidFuelBooster('BACC Thumper', 850,  7650,  1500, 175, 210, 300000, ResearchNode.GeneralRocketry),
+        SolidFuelBooster('S1 Kickback',  2700, 24000, 4500, 195, 220, 670000, ResearchNode.HeavyRocketry) ]
+
+# Extra for stacked stage
+StackstageExtraMass = 50
+StackstageExtraCost = 400
+StackstageExtraNote = "TR-18A Stack Decoupler"
+
+# Extra for radial stage
+# TODO: overthink this (maybe make it adjustable)
+# This is a very heavy but safe default setting, also having the effect of
+# reducing the count of extra radial solid fuel boosters.
+RadialstageExtraMass = 50 + 75 + 2*50
+RadialstageExtraCost = 700 + 320 + 2*42
+RadialstageExtraNote = "TT-70 Radial Decoupler, Advanced Nose Cone, 2 * EAS-4 Strut Connector"

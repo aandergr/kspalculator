@@ -1,7 +1,7 @@
-from math import ceil, log
-from scipy.optimize import fsolve
+from math import ceil
 
 import parts
+import physics
 
 class Design:
     def __init__(self, payload, mainengine, mainenginecount, size):
@@ -12,8 +12,27 @@ class Design:
         self.size = size
         self.min_acceleration = 0
         self.fuel = 0
+        self.notes = []
+        self.sfb = None
+        self.sfbcount = 0
+        self.sfbmountmass = 0
+    def AddSFB(self, sfb, sfbcount):
+        self.sfb = sfb
+        self.sfbcount = sfbcount
+        if sfbcount == 1:
+            self.sfbmountmass = parts.StackstageExtraMass
+            self.cost = self.cost + parts.StackstageExtraCost
+            self.notes.append("Vertically stacked one %s SFB" % sfb.name)
+            self.notes.append("SFB mounted on %s" % parts.StackstageExtraNote)
+        else:
+            self.sfbmountmass = sfbcount*parts.RadialstageExtraMass
+            self.cost = self.cost + sfbcount*parts.RadialstageExtraCost
+            self.notes.append("Radially attached %i times %s SFB" % (sfbcount, sfb.name))
+            self.notes.append("SFBs mounted on %s each" % parts.RadialstageExtraNote)
+        self.mass = self.mass + self.sfbmountmass + sfbcount*sfb.m_full
+        self.cost = self.cost + sfbcount*sfb.cost
     def AddLiquidFuelTanks(self, lf):
-        """lf should be full tank weight"""
+        """lf should be full tank mass"""
         smalltankcount = ceil(lf / parts.RocketFuelTanks[parts.SmallestTank[self.size]].m_full)
         self.fuel = smalltankcount * parts.RocketFuelTanks[parts.SmallestTank[self.size]].m_full
         self.mass = self.mass + self.fuel
@@ -29,8 +48,17 @@ class Design:
             else:
                 self.cost = self.cost + smalltankcount * parts.RocketFuelTanks[i].cost
     def CalculateMinAcceleration(self, pressure):
-        F = self.mainenginecount * engine_force(self.mainengine, pressure)
-        self.min_acceleration = F / self.mass
+        # TODO: let this be the minimum over the complete acceleration path
+        # TODO (rework this)
+        if self.sfb is None:
+            F = self.mainenginecount * physics.engine_force(self.mainengine, pressure)
+            self.min_acceleration = F / self.mass
+        else:
+            A_l = self.mainenginecount * physics.engine_force(self.mainengine, pressure) / \
+                    (self.mass - self.sfbmountmass - self.sfbcount*self.sfb.m_full)
+            A_s = self.sfbcount * physics.engine_force(self.sfb, pressure) / self.mass
+            self.min_acceleration = min(A_l, A_s)
+            # TODO: calculate possible thrust limit for SFBs
     def printinfo(self):
         if self.mainenginecount == 1:
             print("%s" % self.mainengine.name)
@@ -40,10 +68,15 @@ class Design:
         print("\tcost: %i" % self.cost)
         print("\tmin_acceleration: %.1f m/s^2" % self.min_acceleration)
         # TODO: print delta v
-        print("\tfuel: %i units (%i kg full tank weight)" % (self.fuel*8/9*0.2, self.fuel))
+        print("\tliquid fuel: %i units (%i kg full tank mass)" % (self.fuel*8/9*0.2, self.fuel))
         print("\tgimbal: %.1f °" % self.mainengine.tvc)
         print("\t%s" % self.size)
         print("\t%s" % self.mainengine.level)
+        if self.sfb is not None:
+            # TODO: have better level presentation
+            print("\t%s" % self.sfb.level)
+        for n in self.notes:
+            print("\t%s" % n)
     def IsBetterThan(self, a, preferredsize, bestgimbal):
         """
         Returns True if self is better than a by any parameter, i.e. there might
@@ -61,56 +94,73 @@ class Design:
         else:
             if self.mainengine.tvc > 0.0 and a.mainengine.tvc == 0.0:
                 return True
+        # TODO: radially mounted engines might be an advantage
         # this is where user's size preferrence comes in
         if preferredsize is not None:
             if self.size is preferredsize and a.size is not preferredsize:
                 return True
         # check if self uses simpler technology
+        # TODO: check SFB level
         if a.mainengine.level is not self.mainengine.level and a.mainengine.level.DependsOn(self.mainengine.level):
             return True
         return False
 
-def lf_needed_fuel(dv, I_sp, m_p):
-    """Returns required fuel weight"""
-    g_0 = 9.81
-    f_e = 1/8   # empty weight fraction
-    def equations(m):
-        N = len(m)
-        y =     [I_sp[i] * g_0 * log((m_p + m[0]*f_e + m[i])/(m_p + m[0]*f_e + m[i+1])) - dv[i] for i in range(N-1)]
-        y.append(I_sp[N-1]*g_0 * log((m_p + m[0]*f_e + m[N-1])/(m_p+m[0]*f_e)) - dv[N-1])
-        return y
-    sol = fsolve(equations, [0 for i in range(len(I_sp))])
-    return sol[0]
-
-def engine_isp(eng, pressure):
-    return [pressure[i]*eng.isp_atm + (1-pressure[i])*eng.isp_vac for i in range(len(pressure))]
-
-def engine_force(eng, pressure):
-    return pressure[0]*eng.F_vac*eng.isp_atm/eng.isp_vac + (1-pressure[0])*eng.F_vac
-
 # TODO: simplify design creation even more
 
+# TODO: have more options regarding radial size
+
 def CreateSingleLFEngineDesign(payload, pressure, dv, eng):
-    # TODO: have more options regarding radial size
     design = Design(payload, eng, 1, eng.size)
-    design.AddLiquidFuelTanks(9/8 * lf_needed_fuel(dv, engine_isp(eng, pressure), design.mass))
+    lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.mass)
+    if lf is None:
+        return None
+    design.AddLiquidFuelTanks(9/8 * lf)
+    design.CalculateMinAcceleration(pressure)
+    return design
+
+def CreateSingleLFESFBDesign(payload, pressure, dv, eng, sfb, sfbcount):
+    design = Design(payload, eng, 1, eng.size)
+    design.AddSFB(sfb, sfbcount)
+    lf = physics.sflf_needed_fuel(dv, physics.engine_isp(eng, pressure),
+            physics.engine_isp(sfb, pressure),
+            design.mass - design.sfbmountmass - sfbcount*sfb.m_full,
+            design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty)
+    if lf is None:
+        return None
+    design.AddLiquidFuelTanks(9/8 * lf)
     design.CalculateMinAcceleration(pressure)
     return design
 
 def CreateRadialLFEnginesDesign(payload, pressure, dv, eng, size, count):
     design = Design(payload, eng, count, size)
-    design.AddLiquidFuelTanks(9/8 * lf_needed_fuel(dv, engine_isp(eng, pressure), design.mass))
+    lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.mass)
+    if lf is None:
+        return None
+    design.AddLiquidFuelTanks(9/8 * lf)
+    design.CalculateMinAcceleration(pressure)
+    return design
+
+def CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbcount):
+    design = Design(payload, eng, count, size)
+    design.AddSFB(sfb, sfbcount)
+    lf = physics.sflf_needed_fuel(dv, physics.engine_isp(eng, pressure),
+            physics.engine_isp(sfb, pressure),
+            design.mass - design.sfbmountmass - sfbcount*sfb.m_full,
+            design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty)
+    if lf is None:
+        return None
+    design.AddLiquidFuelTanks(9/8 * lf)
     design.CalculateMinAcceleration(pressure)
     return design
 
 # TODO: add ship designs using atomic rocket motor, monopropellant engine, ion engine
 # TODO: add ship radially mounted fuel tank + engine combinations
-# TODO: add ship design with solid fuel booster
 # TODO: add asparagous designs
 
 # TODO: consider ship width and adapters
+# TODO: consider bi-couplers, tri-couplers, etc.
 
-def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, bestgimbal = False):
+def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, bestgimbal = False, sfballowed = False):
     """
     pressure: 0 = vacuum, 1 = kerbin
     """
@@ -120,13 +170,29 @@ def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, b
             for size in [parts.RadialSize.Tiny, parts.RadialSize.Small, parts.RadialSize.Large, parts.RadialSize.ExtraLarge]:
                 for count in [2, 3, 4, 6, 8]:
                     d = CreateRadialLFEnginesDesign(payload, pressure, dv, eng, size, count)
-                    if d.min_acceleration >= min_acceleration:
+                    if d is not None and d.min_acceleration >= min_acceleration:
                         designs.append(d)
                         break   # do not try more engines
+                if sfballowed:
+                    for count in [2, 3, 4, 6, 8]:
+                        for sfbcount in [1, 2, 3, 4, 6, 8]:
+                            for sfb in parts.SolidFuelBoosters:
+                                d = CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbcount)
+                                if d is not None and d.min_acceleration >= min_acceleration:
+                                    designs.append(d)
         else:
             d = CreateSingleLFEngineDesign(payload, pressure, dv, eng)
-            if d.min_acceleration >= min_acceleration:
+            if d is not None and d.min_acceleration >= min_acceleration:
                 designs.append(d)
+            if sfballowed and eng.size is not parts.RadialSize.Tiny:
+                for sfbcount in [1, 2, 3, 4, 6, 8]:
+                    if sfbcount == 1 and size is not parts.RadialSize.Small:
+                        # would look bad
+                        continue
+                    for sfb in parts.SolidFuelBoosters:
+                        d = CreateSingleLFESFBDesign(payload, pressure, dv, eng, sfb, sfbcount)
+                        if d is not None and d.min_acceleration >= min_acceleration:
+                            designs.append(d)
 
     for d in designs:
         d.IsBest = True

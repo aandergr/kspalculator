@@ -19,8 +19,9 @@ parser.add_argument('acceleration', type=float, help='Required minimum accelerat
 parser.add_argument('dvtuples', metavar='deltav:pressure', nargs='+', help='deltav:pressure tuples')
 # TODO: implement type check for dvtuples
 parser.add_argument('-c', '--cheapest', action='store_true', help='Sort by cost instead of weight')
+parser.add_argument('-b', '--boosters', action='store_true', help='Allow adding solid fuel boosters')
 parser.add_argument('-S', '--preferred-size', choices=['tiny', 'small', 'large', 'extralarge'], help='Preferred width of the stage')
-parser.add_argument('-b', '--best-gimbal', action='store_true', help='Not only compare whether engine has gimbal or not, but also the maximum trust vectoring angle')
+parser.add_argument('-g', '--best-gimbal', action='store_true', help='Not only compare whether engine has gimbal or not, but also the maximum trust vectoring angle')
 parser.add_argument('--keep', action='store_true', help='Do not hide bad solutions')
 
 args = parser.parse_args()
@@ -44,7 +45,7 @@ if args.preferred_size is not None:
 dv = [float(s.partition(':')[0]) for s in args.dvtuples]
 pr = [float(s.partition(':')[2]) for s in args.dvtuples]
 
-all_designs = FindDesigns(args.payload, pr, dv, args.acceleration, ps, args.best_gimbal)
+all_designs = FindDesigns(args.payload, pr, dv, args.acceleration, ps, args.best_gimbal, args.boosters)
 
 if args.keep:
     D = all_designs
