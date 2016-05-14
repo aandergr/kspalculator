@@ -43,6 +43,9 @@ class ResearchNode(Enum):
                 return False
         return a.value+10 <= self.value
 
+    def MoreSophisticated(self, a):
+        return (self is not a and a.DependsOn(self))
+
 LiquidFuelEngine = namedtuple('LiquidFuelEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac', 'F_vac', 'tvc', 'level'])
 # TODO: consider that engines generating electricity are advantageous
 

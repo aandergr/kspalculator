@@ -22,12 +22,12 @@ class Design:
         if sfbcount == 1:
             self.sfbmountmass = parts.StackstageExtraMass
             self.cost = self.cost + parts.StackstageExtraCost
-            self.notes.append("Vertically stacked one %s SFB" % sfb.name)
+            self.notes.append("Vertically stacked %s SFB" % sfb.name)
             self.notes.append("SFB mounted on %s" % parts.StackstageExtraNote)
         else:
             self.sfbmountmass = sfbcount*parts.RadialstageExtraMass
             self.cost = self.cost + sfbcount*parts.RadialstageExtraCost
-            self.notes.append("Radially attached %i times %s SFB" % (sfbcount, sfb.name))
+            self.notes.append("Radially attached %i * %s SFB" % (sfbcount, sfb.name))
             self.notes.append("SFBs mounted on %s each" % parts.RadialstageExtraNote)
         self.mass = self.mass + self.sfbmountmass + sfbcount*sfb.m_full
         self.cost = self.cost + sfbcount*sfb.cost
@@ -64,19 +64,39 @@ class Design:
             print("%s" % self.mainengine.name)
         else:
             print("%i * %s, radially mounted" % (self.mainenginecount, self.mainengine.name))
-        print("\ttotal mass: %i kg (including payload)" % self.mass)
-        print("\tcost: %i" % self.cost)
-        print("\tmin_acceleration: %.1f m/s^2" % self.min_acceleration)
-        # TODO: print delta v
-        print("\tliquid fuel: %i units (%i kg full tank mass)" % (self.fuel*8/9*0.2, self.fuel))
-        print("\tgimbal: %.1f °" % self.mainengine.tvc)
-        print("\t%s" % self.size)
-        print("\t%s" % self.mainengine.level)
-        if self.sfb is not None:
-            # TODO: have better level presentation
-            print("\t%s" % self.sfb.level)
+        print("\tTotal Mass: %i kg (including payload and full tanks)" % self.mass)
+        print("\tCost: %i" % self.cost)
+        print("\tMin. acceleration: %.1f m/s²" % self.min_acceleration)
+        print("\tLiquid fuel: %i units (%i kg full tank mass)" % (self.fuel*8/9*0.2, self.fuel))
+        print("\tGimbal: %.1f °" % self.mainengine.tvc)
+        print("\tRadial size: %s" % self.size.name)
+        if self.sfb is None:
+            req = self.mainengine.level.name
+        else:
+            if self.sfb.level.DependsOn(self.mainengine.level):
+                req = self.sfb.level.name
+            elif self.mainengine.level.DependsOn(self.sfb.level):
+                req = self.mainengine.level.name
+            else:
+                req = "%s and %s" % (self.sfb.level.name, self.mainengine.level.name)
+        print("\tRequires: %s" % req)
         for n in self.notes:
             print("\t%s" % n)
+    def MoreSophisticated(self, a):
+        # check if self uses simpler technology than a
+        if self.sfb is None and a.sfb is None:
+            return a.mainengine.level.MoreSophisticated(self.mainengine.level)
+        if self.sfb is None and a.sfb is not None:
+            return a.mainengine.level.MoreSophisticated(self.mainengine.level) and \
+                    a.sfb.level.MoreSophisticated(self.mainengine.level)
+        if self.sfb is not None and a.sfb is None:
+            return a.mainengine.level.MoreSophisticated(self.mainengine.level) or \
+                    a.mainengine.level.MoreSophisticated(self.sfb.level)
+        else:
+            return (a.mainengine.level.MoreSophisticated(self.mainengine.level) and \
+                    a.sfb.level.MoreSophisticated(self.mainengine.level)) or \
+                    (a.mainengine.level.MoreSophisticated(self.sfb.level) and \
+                    a.sfb.level.MoreSophisticated(self.sfb.level))
     def IsBetterThan(self, a, preferredsize, bestgimbal):
         """
         Returns True if self is better than a by any parameter, i.e. there might
@@ -99,9 +119,7 @@ class Design:
         if preferredsize is not None:
             if self.size is preferredsize and a.size is not preferredsize:
                 return True
-        # check if self uses simpler technology
-        # TODO: check SFB level
-        if a.mainengine.level is not self.mainengine.level and a.mainengine.level.DependsOn(self.mainengine.level):
+        if a.MoreSophisticated(self):
             return True
         return False
 
@@ -173,9 +191,11 @@ def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, b
                     if d is not None and d.min_acceleration >= min_acceleration:
                         designs.append(d)
                         break   # do not try more engines
-                if sfballowed:
-                    for count in [2, 3, 4, 6, 8]:
+                    if sfballowed and size is not parts.RadialSize.Tiny:
                         for sfbcount in [1, 2, 3, 4, 6, 8]:
+                            if sfbcount == 1 and size is not parts.RadialSize.Small:
+                                # would look bad
+                                continue
                             for sfb in parts.SolidFuelBoosters:
                                 d = CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbcount)
                                 if d is not None and d.min_acceleration >= min_acceleration:
