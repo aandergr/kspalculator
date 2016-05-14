@@ -60,7 +60,8 @@ class Design:
             self.min_acceleration = min(A_l, A_s)
     def SetSFBLimit(self, pressure, min_accel):
         A_s = self.sfbcount * physics.engine_force(self.sfb, pressure) / self.mass
-        self.notes.append("You might limit SFB thrust to %i %%" % ceil(min_accel/A_s*100))
+        if min_accel/A_s < 0.95:
+            self.notes.append("You might limit SFB thrust to %.1f %%" % (ceil(min_accel/A_s*200)/2.0))
     def printinfo(self):
         if self.mainenginecount == 1:
             print("%s" % self.mainengine.name)
