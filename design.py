@@ -196,7 +196,8 @@ def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, b
                     if d is not None and d.min_acceleration >= min_acceleration:
                         designs.append(d)
                         break   # do not try more engines
-                    if sfballowed and size is not parts.RadialSize.Tiny:
+                if sfballowed and size is not parts.RadialSize.Tiny:
+                    for count in [2, 3, 4, 6, 8]:
                         for sfbcount in [1, 2, 3, 4, 6, 8]:
                             if sfbcount == 1 and size is not parts.RadialSize.Small:
                                 # would look bad
