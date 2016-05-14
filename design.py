@@ -58,7 +58,9 @@ class Design:
                     (self.mass - self.sfbmountmass - self.sfbcount*self.sfb.m_full)
             A_s = self.sfbcount * physics.engine_force(self.sfb, pressure) / self.mass
             self.min_acceleration = min(A_l, A_s)
-            # TODO: calculate possible thrust limit for SFBs
+    def SetSFBLimit(self, pressure, min_accel):
+        A_s = self.sfbcount * physics.engine_force(self.sfb, pressure) / self.mass
+        self.notes.append("You might limit SFB thrust to %i %%" % ceil(min_accel/A_s*100))
     def printinfo(self):
         if self.mainenginecount == 1:
             print("%s" % self.mainengine.name)
@@ -136,7 +138,7 @@ def CreateSingleLFEngineDesign(payload, pressure, dv, eng):
     design.CalculateMinAcceleration(pressure)
     return design
 
-def CreateSingleLFESFBDesign(payload, pressure, dv, eng, sfb, sfbcount):
+def CreateSingleLFESFBDesign(payload, pressure, dv, eng, sfb, sfbcount, min_accel):
     design = Design(payload, eng, 1, eng.size)
     design.AddSFB(sfb, sfbcount)
     lf = physics.sflf_needed_fuel(dv, physics.engine_isp(eng, pressure),
@@ -147,6 +149,7 @@ def CreateSingleLFESFBDesign(payload, pressure, dv, eng, sfb, sfbcount):
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
     design.CalculateMinAcceleration(pressure)
+    design.SetSFBLimit(pressure, min_accel)
     return design
 
 def CreateRadialLFEnginesDesign(payload, pressure, dv, eng, size, count):
@@ -158,7 +161,7 @@ def CreateRadialLFEnginesDesign(payload, pressure, dv, eng, size, count):
     design.CalculateMinAcceleration(pressure)
     return design
 
-def CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbcount):
+def CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbcount, min_accel):
     design = Design(payload, eng, count, size)
     design.AddSFB(sfb, sfbcount)
     lf = physics.sflf_needed_fuel(dv, physics.engine_isp(eng, pressure),
@@ -169,6 +172,7 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbco
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
     design.CalculateMinAcceleration(pressure)
+    design.SetSFBLimit(pressure, min_accel)
     return design
 
 # TODO: add ship designs using atomic rocket motor, monopropellant engine, ion engine
@@ -197,7 +201,7 @@ def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, b
                                 # would look bad
                                 continue
                             for sfb in parts.SolidFuelBoosters:
-                                d = CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbcount)
+                                d = CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbcount, min_acceleration)
                                 if d is not None and d.min_acceleration >= min_acceleration:
                                     designs.append(d)
         else:
@@ -210,7 +214,7 @@ def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, b
                         # would look bad
                         continue
                     for sfb in parts.SolidFuelBoosters:
-                        d = CreateSingleLFESFBDesign(payload, pressure, dv, eng, sfb, sfbcount)
+                        d = CreateSingleLFESFBDesign(payload, pressure, dv, eng, sfb, sfbcount, min_acceleration)
                         if d is not None and d.min_acceleration >= min_acceleration:
                             designs.append(d)
 
