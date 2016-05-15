@@ -1,7 +1,6 @@
 from math import log
 from scipy.optimize import fsolve
 
-# TODO: have unit tests for physics
 # TODO: have debugging log for *_needed_fuel() functions, keep acceleration path
 
 def lf_needed_fuel(dv, I_sp, m_p):
@@ -69,7 +68,6 @@ def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
     try:
         (sol, infodict, ier, mesg) = fsolve(equations, [0 for i in range(len(I_spl))], full_output=True)
     except ValueError:
-        # TODO: investigate and fix this
         print("WARNING: Solution skipped due to ValueError")
         return None
     if not ier:

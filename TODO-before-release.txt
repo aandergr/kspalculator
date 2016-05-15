@@ -1,0 +1,64 @@
+Things which should be done before releasing this software, in order of
+their priority.
+
+- Calculate real delta v and acceleration of all flight phases.
+ - This info should be printed, as tuples of "delta v, pressure,
+   acceleration at start and end of phase, type of engine, mass at start
+   end end of phase"
+ - Info should be used to determine whether design cumplies minimum
+   acceleration constraint.
+ - Minimum acceleration constraint should be given per flight phase, not
+   global, as dv[:acc[:p]] tuples i.e. "905:13:1.0 3650:13:0.18" as
+   Kerbin launch, "1170 1160:3.3 310" for flight from LKO to Mun and
+   back to Kerbin, acc (minimum acceleration) and p (pressure) both
+   defaulting to 0.0. Note that this also defines a User Interface
+   change, as well as an enhancement of physics calculation.
+ - It might be considered an advantage that less delta v is done by
+   not-controllable solid fuel boosters.
+
+- Consider remaining types of engines, i.e.
+ - Nuclear fission motor,
+ - Ion propulsion,
+ - Monopropellant engines,
+ - Twin-Boar, having tank included.
+
+- Review and test physics.py. Note that this is the most important part
+  of the tool, as it would be useless if the designs do not have the
+  exact quantity of fuel needed.
+ - Also see point 1.
+ - There should be unit tests, as this is easily testable.
+ - Check in which cases the solver is not able to find a solution.
+   Eventually use alternative, but equivalent specification of
+   equations.
+ - Check plausibility of solutions.
+ - Test, test, test. (also building rockets)
+
+- Consider that radially mounted engines might be an advantage.
+
+- Consider that engines generating electricity might be advantageous.
+
+- Consider adapters between different radial sizes.
+ - There should be an option for upper radial size.
+ - There should be an option for not using smaller sizes than upper
+   radial size.
+ - There should be an option to disable usage of adapters (but still
+   changing size, as preferrence of keeping size can be expressed using
+   --preferred-size option)
+
+- Consider mounting multiple small engines on bi-coupler, tri-coupler,
+  etc.. This option should be disable-able.
+
+- Review and test IsBest algorithm.
+
+- Code quality (commenting, function names, code style, etc.)
+
+- Heavily test everything, also create automated tests.
+
+- Documentation and User Interface.
+ - Write good README.md with examples.
+ - Let kspalculator.py print all constraints for double-checking, unless
+   --quiet option is given.
+ - Rework --help.
+ - Check validity of given options.
+
+- One more time: Test and review code.

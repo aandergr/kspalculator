@@ -48,8 +48,6 @@ class Design:
             else:
                 self.cost = self.cost + smalltankcount * parts.RocketFuelTanks[i].cost
     def CalculateMinAcceleration(self, pressure):
-        # TODO: let this be the minimum over the complete acceleration path
-        # TODO (rework this)
         if self.sfb is None:
             F = self.mainenginecount * physics.engine_force(self.mainengine, pressure)
             self.min_acceleration = F / self.mass
@@ -117,7 +115,6 @@ class Design:
         else:
             if self.mainengine.tvc > 0.0 and a.mainengine.tvc == 0.0:
                 return True
-        # TODO: radially mounted engines might be an advantage
         # this is where user's size preferrence comes in
         if preferredsize is not None:
             if self.size is preferredsize and a.size is not preferredsize:
@@ -127,8 +124,6 @@ class Design:
         return False
 
 # TODO: simplify design creation even more
-
-# TODO: have more options regarding radial size
 
 def CreateSingleLFEngineDesign(payload, pressure, dv, eng):
     design = Design(payload, eng, 1, eng.size)
@@ -176,12 +171,8 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbco
     design.SetSFBLimit(pressure, min_accel)
     return design
 
-# TODO: add ship designs using atomic rocket motor, monopropellant engine, ion engine
 # TODO: add ship radially mounted fuel tank + engine combinations
 # TODO: add asparagous designs
-
-# TODO: consider ship width and adapters
-# TODO: consider bi-couplers, tri-couplers, etc.
 
 def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, bestgimbal = False, sfballowed = False):
     """

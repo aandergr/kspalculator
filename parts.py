@@ -47,12 +47,6 @@ class ResearchNode(Enum):
         return (self is not a and a.DependsOn(self))
 
 LiquidFuelEngine = namedtuple('LiquidFuelEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac', 'F_vac', 'tvc', 'level'])
-# TODO: consider that engines generating electricity are advantageous
-
-# TODO: support monopropellant engines
-# TODO: support ion engines
-# TODO: support atomic engines
-# TODO: support engines which have tank included
 
 LiquidFuelEngines = [
         LiquidFuelEngine(RadialSize.RdMntd,'LV-1R Spider',   120,  20,   260, 290, 2000,   8, ResearchNode.PrecisionPropulsion),

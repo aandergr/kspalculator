@@ -17,7 +17,6 @@ parser = ArgumentParser(description='Determine best rocket design', epilog=epilo
 parser.add_argument('payload', type=float, help='Payload in kg')
 parser.add_argument('acceleration', type=float, help='Required minimum acceleration in m/s^2')
 parser.add_argument('dvtuples', metavar='deltav:pressure', nargs='+', help='deltav:pressure tuples')
-# TODO: implement type check for dvtuples
 parser.add_argument('-c', '--cheapest', action='store_true', help='Sort by cost instead of weight')
 parser.add_argument('-b', '--boosters', action='store_true', help='Allow adding solid fuel boosters')
 parser.add_argument('-S', '--preferred-size', choices=['tiny', 'small', 'large', 'extralarge'], help='Preferred width of the stage')
