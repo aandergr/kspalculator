@@ -32,6 +32,7 @@ their priority.
    equations.
  - Check plausibility of solutions.
  - Test, test, test. (also building rockets)
+ - Avoid obvious things reducing performance
 
 - Consider that radially mounted engines might be an advantage.
 
