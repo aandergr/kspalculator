@@ -81,10 +81,13 @@ class Design:
             print("\t %s%i:  %4.0f m/s @ %s  %5.2f m/s² - %5.2f m/s²  %5.1f t - %5.1f t" % \
                     (solid_str, i+1, dv[i], p_str, a_s[i], a_t[i], m_s[i]/1000.0, m_t[i]/1000.0))
     def SetSFBLimit(self, pressure, acc):
-        # TODO: it is bad to only have this check at [0]
-        A_s = physics.engine_force(self.sfbcount, self.sfb, pressure)[0] / self.mass
-        if acc[0]/A_s < 0.95:
-            self.notes.append("You might limit SFB thrust to %.1f %%" % (ceil(acc[0]/A_s*200)/2.0))
+        dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
+        limit = 1.0
+        for i in range(len(a_s)):
+            if solid[i] and acc[i]/a_s[i] < limit:
+                limit = acc[i]/a_s[i]
+        if limit < 0.95:
+            self.notes.append("You might limit SFB thrust to %.1f %%" % (ceil(limit*200)/2.0))
     def printinfo(self):
         if self.mainenginecount == 1:
             print("%s" % self.mainengine.name)
