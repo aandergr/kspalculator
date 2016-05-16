@@ -1,5 +1,6 @@
 from math import log
 from scipy.optimize import fsolve
+from warnings import warn
 
 # *_needed_fuel() functions return needed kilograms of liquid combustible for
 # given
@@ -50,6 +51,9 @@ def lf_needed_fuel(dv, I_sp, m_p):
     (sol, infodict, ier, mesg) = fsolve(equations, [0 for i in range(len(I_sp))], full_output=True)
     if not ier:
         return None
+    if min(sol) < 0:
+        warn("There was a negative mass")
+        return None
     return sol[0]
 
 def lf_performance(dv, I_sp, F, p, m_p, m_c):
@@ -61,9 +65,9 @@ def lf_performance(dv, I_sp, F, p, m_p, m_c):
         m = x
         n = len(m)-1
         y = len(m)*[0]
-        if n == 0:
-            y[0] = l(I_sp[0], m_c, 0) - dvn
-        elif n == 1:
+        # case n=0 does not exist, as we have at least two phases including
+        # extra phase.
+        if n == 1:
             y[0] = l(I_sp[0], m_c, m[1]) - dv[0]
             y[1] = l(I_sp[1], m[1], 0) - dvn
         else:
@@ -129,6 +133,9 @@ def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
         except ValueError:
             continue
         if ier:
+            if min(sol) < 0:
+                # in this case no warning. only means that SFBs were too strong
+                return None
             return sol[0]
     return None
 
