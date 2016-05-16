@@ -10,12 +10,12 @@ class Design:
         self.mainengine = mainengine
         self.mainenginecount = mainenginecount
         self.size = size
-        self.min_acceleration = 0
         self.fuel = 0
         self.notes = []
         self.sfb = None
         self.sfbcount = 0
         self.sfbmountmass = 0
+        self.performance = None # returned by physics.*_performance()
     def AddSFB(self, sfb, sfbcount):
         self.sfb = sfb
         self.sfbcount = sfbcount
@@ -47,19 +47,45 @@ class Design:
                 smalltankcount = smalltankcount // 2
             else:
                 self.cost = self.cost + smalltankcount * parts.RocketFuelTanks[i].cost
-    def CalculateMinAcceleration(self, pressure):
+    def CalculatePerformance(self, dv, pressure):
         if self.sfb is None:
-            F = self.mainenginecount * physics.engine_force(self.mainengine, pressure)
-            self.min_acceleration = F / self.mass
+            self.performance = physics.lf_performance(dv, \
+                    physics.engine_isp(self.mainengine, pressure), \
+                    physics.engine_force(self.mainenginecount, self.mainengine, pressure), \
+                    pressure, self.mass - self.fuel, self.fuel*8/9)
         else:
-            A_l = self.mainenginecount * physics.engine_force(self.mainengine, pressure) / \
+            # TODO
+            pass
+    def EnoughAcceleration(self, min_acceleration):
+        if self.sfb is not None:
+            # TODO remove this
+            A_s = physics.engine_force(self.sfbcount, self.sfb, [1.0])[0] / self.mass
+            A_l = physics.engine_force(self.mainenginecount, self.mainengine, [1.0])[0] / \
                     (self.mass - self.sfbmountmass - self.sfbcount*self.sfb.m_full)
-            A_s = self.sfbcount * physics.engine_force(self.sfb, pressure) / self.mass
-            self.min_acceleration = min(A_l, A_s)
-    def SetSFBLimit(self, pressure, min_accel):
-        A_s = self.sfbcount * physics.engine_force(self.sfb, pressure) / self.mass
-        if min_accel/A_s < 0.95:
-            self.notes.append("You might limit SFB thrust to %.1f %%" % (ceil(min_accel/A_s*200)/2.0))
+            if A_s < min_acceleration[0] or A_l < min_acceleration[0]:
+                return False
+            else:
+                return True
+        dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
+        for i in range(len(a_s)):
+            if a_s[i] < min_acceleration[op[i]]:
+                return False
+        return True
+    def PrintPerformance(self):
+        if self.sfb is not None:
+            print("\t[unsupported for solid fuel boosters]")
+            return
+        dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
+        for i in range(len(dv)):
+            p_str = ("%.2f atm" % p[i]) if p[i] > 0 else "vacuum  "
+            solid_str = "*" if solid[i] else " "
+            print("\t %s%i:  %4.0f m/s @ %s  %5.2f m/s² - %5.2f m/s²  %5.1f t - %5.1f t" % \
+                    (solid_str, i+1, dv[i], p_str, a_s[i], a_t[i], m_s[i]/1000.0, m_t[i]/1000.0))
+    def SetSFBLimit(self, pressure, acc):
+        # TODO: it is bad to only have this check at [0]
+        A_s = physics.engine_force(self.sfbcount, self.sfb, pressure)[0] / self.mass
+        if acc[0]/A_s < 0.95:
+            self.notes.append("You might limit SFB thrust to %.1f %%" % (ceil(acc[0]/A_s*200)/2.0))
     def printinfo(self):
         if self.mainenginecount == 1:
             print("%s" % self.mainengine.name)
@@ -67,7 +93,6 @@ class Design:
             print("%i * %s, radially mounted" % (self.mainenginecount, self.mainengine.name))
         print("\tTotal Mass: %i kg (including payload and full tanks)" % self.mass)
         print("\tCost: %i" % self.cost)
-        print("\tMin. acceleration: %.1f m/s²" % self.min_acceleration)
         print("\tLiquid fuel: %i units (%i kg full tank mass)" % (self.fuel*8/9*0.2, self.fuel))
         print("\tGimbal: %.1f °" % self.mainengine.tvc)
         print("\tRadial size: %s" % self.size.name)
@@ -83,6 +108,8 @@ class Design:
         print("\tRequires: %s" % req)
         for n in self.notes:
             print("\t%s" % n)
+        print("\tPerformance:")
+        self.PrintPerformance()
     def MoreSophisticated(self, a):
         # check if self uses simpler technology than a
         if self.sfb is None and a.sfb is None:
@@ -106,8 +133,6 @@ class Design:
         # obvious and easy to check criteria
         if (self.mass < a.mass) or (self.cost < a.cost):
             return True
-        # min_acceleration is not a good criteria, as a higher acceleration than
-        # the minimum required acceleration is usually not useful
         # check if we have better gimbal
         if bestgimbal:
             if self.mainengine.tvc > a.mainengine.tvc:
@@ -125,16 +150,18 @@ class Design:
 
 # TODO: simplify design creation even more
 
-def CreateSingleLFEngineDesign(payload, pressure, dv, eng):
+def CreateSingleLFEngineDesign(payload, pressure, dv, acc, eng):
     design = Design(payload, eng, 1, eng.size)
     lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.mass)
     if lf is None:
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
-    design.CalculateMinAcceleration(pressure)
+    design.CalculatePerformance(dv, pressure)
+    if not design.EnoughAcceleration(acc):
+        return None
     return design
 
-def CreateSingleLFESFBDesign(payload, pressure, dv, eng, sfb, sfbcount, min_accel):
+def CreateSingleLFESFBDesign(payload, pressure, dv, acc, eng, sfb, sfbcount):
     design = Design(payload, eng, 1, eng.size)
     design.AddSFB(sfb, sfbcount)
     lf = physics.sflf_needed_fuel(dv, physics.engine_isp(eng, pressure),
@@ -144,20 +171,24 @@ def CreateSingleLFESFBDesign(payload, pressure, dv, eng, sfb, sfbcount, min_acce
     if lf is None:
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
-    design.CalculateMinAcceleration(pressure)
-    design.SetSFBLimit(pressure, min_accel)
+    design.CalculatePerformance(dv, pressure)
+    if not design.EnoughAcceleration(acc):
+        return None
+    design.SetSFBLimit(pressure, acc)
     return design
 
-def CreateRadialLFEnginesDesign(payload, pressure, dv, eng, size, count):
+def CreateRadialLFEnginesDesign(payload, pressure, dv, acc, eng, size, count):
     design = Design(payload, eng, count, size)
     lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.mass)
     if lf is None:
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
-    design.CalculateMinAcceleration(pressure)
+    design.CalculatePerformance(dv, pressure)
+    if not design.EnoughAcceleration(acc):
+        return None
     return design
 
-def CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbcount, min_accel):
+def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, size, count, sfb, sfbcount):
     design = Design(payload, eng, count, size)
     design.AddSFB(sfb, sfbcount)
     lf = physics.sflf_needed_fuel(dv, physics.engine_isp(eng, pressure),
@@ -167,8 +198,10 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbco
     if lf is None:
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
-    design.CalculateMinAcceleration(pressure)
-    design.SetSFBLimit(pressure, min_accel)
+    design.CalculatePerformance(dv, pressure)
+    if not design.EnoughAcceleration(acc):
+        return None
+    design.SetSFBLimit(pressure, acc)
     return design
 
 # TODO: add ship radially mounted fuel tank + engine combinations
@@ -183,8 +216,8 @@ def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, b
         if eng.size is parts.RadialSize.RdMntd:
             for size in [parts.RadialSize.Tiny, parts.RadialSize.Small, parts.RadialSize.Large, parts.RadialSize.ExtraLarge]:
                 for count in [2, 3, 4, 6, 8]:
-                    d = CreateRadialLFEnginesDesign(payload, pressure, dv, eng, size, count)
-                    if d is not None and d.min_acceleration >= min_acceleration:
+                    d = CreateRadialLFEnginesDesign(payload, pressure, dv, min_acceleration, eng, size, count)
+                    if d is not None:
                         designs.append(d)
                         break   # do not try more engines
                 if sfballowed and size is not parts.RadialSize.Tiny:
@@ -194,12 +227,12 @@ def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, b
                                 # would look bad
                                 continue
                             for sfb in parts.SolidFuelBoosters:
-                                d = CreateRadialLFESFBDesign(payload, pressure, dv, eng, size, count, sfb, sfbcount, min_acceleration)
-                                if d is not None and d.min_acceleration >= min_acceleration:
+                                d = CreateRadialLFESFBDesign(payload, pressure, dv, min_acceleration, eng, size, count, sfb, sfbcount)
+                                if d is not None:
                                     designs.append(d)
         else:
-            d = CreateSingleLFEngineDesign(payload, pressure, dv, eng)
-            if d is not None and d.min_acceleration >= min_acceleration:
+            d = CreateSingleLFEngineDesign(payload, pressure, dv, min_acceleration, eng)
+            if d is not None:
                 designs.append(d)
             if sfballowed and eng.size is not parts.RadialSize.Tiny:
                 for sfbcount in [1, 2, 3, 4, 6, 8]:
@@ -207,8 +240,8 @@ def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, b
                         # would look bad
                         continue
                     for sfb in parts.SolidFuelBoosters:
-                        d = CreateSingleLFESFBDesign(payload, pressure, dv, eng, sfb, sfbcount, min_acceleration)
-                        if d is not None and d.min_acceleration >= min_acceleration:
+                        d = CreateSingleLFESFBDesign(payload, pressure, dv, min_acceleration, eng, sfb, sfbcount)
+                        if d is not None:
                             designs.append(d)
 
     for d in designs:

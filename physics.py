@@ -1,11 +1,46 @@
 from math import log
 from scipy.optimize import fsolve
 
-# TODO: have debugging log for *_needed_fuel() functions, keep acceleration path
+# *_needed_fuel() functions return needed kilograms of liquid combustible for
+# given
+#  - dv:    Array of required delta v for each flight phase,
+#  - I_sp (or I_spl, I_sps):
+#           Array of specific impulse of used engines,
+#  - m_p:   Payload, including mass of liquid fuel engine,
+#  - m_x:   Extra weight needed to mount solid fuel boosters,
+#  - sm_s:  Solid fuel booster start (full) mass,
+#  - sm_t:  Solid fuel booster terminal (empty) mass.
+
+# *_performance() functions return a tuple of
+#  - dv:    Array of delta v for each flight phase, extraneous dv being added to
+#           ultimate phase,
+#  - p:     Pressure used for calculation for each flight phase (This is not
+#           actually used for calculation. Given Isp and F are used. We return
+#           it as it might be of interest for user),
+#  - a_s:   Maximum (full thrust) acceleration at start of each phase,
+#  - a_t:   Maximum (full thrust) acceleration at end of each phase,
+#  - m_s:   Total mass at start of each phase,
+#  - m_t:   Total mass at end of each phase,
+#  - solid: Array of whether solid fuel boosters are used in each phase,
+#  - op:    Original phase (phases are splitted up when LFE ignites).
+# for given
+#  - dv:    Array of required delta v for each flight phase,
+#  - I_sp (or I_spl, I_sps):
+#           Array of specific impulse of used engines,
+#  - F (or Fl, Fs):
+#           Array of force of used engines,
+#  - p:     Array of pressure at each phase (This is not evaluated. Only I_sp
+#           and F are used for calculation),
+#  - m_p:   Payload, including mass of liquid fuel engine,
+#  - m_c:   Mass of liquid combustible carried at start,
+#  - m_x:   Extra weight needed to mount solid fuel boosters,
+#  - sm_s:  Solid fuel booster start (full) mass,
+#  - sm_t:  Solid fuel booster terminal (empty) mass.
+
+# only used for I_sp conversion
+g_0 = 9.80665
 
 def lf_needed_fuel(dv, I_sp, m_p):
-    """Returns required fuel weight"""
-    g_0 = 9.81
     f_e = 1/8   # empty weight fraction
     def equations(m):
         N = len(m)
@@ -17,8 +52,42 @@ def lf_needed_fuel(dv, I_sp, m_p):
         return None
     return sol[0]
 
+def lf_performance(dv, I_sp, F, p, m_p, m_c):
+    f_e = 1/8   # empty weight fraction
+    def l(Isp, m_s, m_t):
+        return g_0 * Isp * log((m_p + f_e*m_c + m_s) / (m_p + f_e*m_c + m_t))
+    def equations(x):
+        dvn = x[0]
+        m = x
+        n = len(m)-1
+        y = len(m)*[0]
+        if n == 0:
+            y[0] = l(I_sp[0], m_c, 0) - dvn
+        elif n == 1:
+            y[0] = l(I_sp[0], m_c, m[1]) - dv[0]
+            y[1] = l(I_sp[1], m[1], 0) - dvn
+        else:
+            y[0] = l(I_sp[0], m_c, m[1]) - dv[0]
+            for i in range(1,n):
+                y[i] = l(I_sp[i], m[i], m[i+1]) - dv[i]
+            y[n] = l(I_sp[n], m[n], 0) - dvn
+        return y
+    n = len(dv)-1
+    x0 = [dv[n]] + n*[0]
+    sol = fsolve(equations, x0)
+    r_dv = [dv[i] for i in range(n)] + [sol[0]]
+    r_p = p
+    r_solid = (n+1)*[False]
+    r_m_s = [m_p + f_e*m_c + m_c] + \
+            [m_p + f_e*m_c + sol[i] for i in range(1,n+1)]
+    r_m_t = [m_p + f_e*m_c + sol[i] for i in range(1,n+1)] + \
+            [m_p + f_e*m_c]
+    r_a_s = [F[i] / r_m_s[i] for i in range(n+1)]
+    r_a_t = [F[i] / r_m_t[i] for i in range(n+1)]
+    r_op = [i for i in range(n+1)]
+    return r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op
+
 def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
-    g_0 = 9.81
     def equations(m, *args):
         def s(Isp, m_s, m_t, m_c):
             return g_0 * Isp * log((m_p + 9/8*m_c + m_x + m_s) / (m_p + 9/8*m_c + m_x + m_t))
@@ -58,6 +127,5 @@ def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
 def engine_isp(eng, pressure):
     return [pressure[i]*eng.isp_atm + (1-pressure[i])*eng.isp_vac for i in range(len(pressure))]
 
-def engine_force(eng, pressure):
-    return pressure[0]*eng.F_vac*eng.isp_atm/eng.isp_vac + (1-pressure[0])*eng.F_vac
-
+def engine_force(count, eng, pressure):
+    return [count*(pressure[i]*eng.F_vac*eng.isp_atm/eng.isp_vac + (1-pressure[i])*eng.F_vac) for i in range(len(pressure))]
