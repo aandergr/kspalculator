@@ -139,6 +139,44 @@ def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
             return sol[0]
     return None
 
+def sflf_performance(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t):
+    def s(Isp, m_s, m_t):
+        return g_0 * Isp * log((m_p + 9/8*m_c + m_x + m_s) / (m_p + 9/8*m_c + m_x + m_t))
+    def l(Isp, m_s, m_t):
+        return g_0 * Isp * log((m_p + 1/8*m_c + m_s) / (m_p + 1/8*m_c + m_t))
+    n = len(dv)-1
+    if n == 0:
+        dv_s = s(I_sps[0], sm_s, sm_t)
+        if (dv_s > dv[0] or l(I_spl[0], m_c, 0) + dv_s < dv[0]):
+            # TODO: investigate and fix this
+            print("sflf_performance() got very bad input.")
+            print(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t)
+            print(dv_s, l(I_spl[0], m_c, 0))
+        def equations(x):
+            dv_x, m_1 = x
+            return [ dv[0] - dv_s - l(I_spl[0], m_c, m_1),
+                    dv_x - l(I_spl[0], m_1, 0) ]
+        x0 = [0, 0]
+        s = fsolve(equations, x0)
+        dv_x, m_1 = s
+        # return
+        r_dv = [dv_s, dv[0] - dv_s, dv_x]
+        r_op = [0, 0, 0]
+        r_p = 3*[p[0]]
+        r_solid = [True, False, False]
+        r_m_s = [m_p + 9/8*m_c + m_x + sm_s, \
+                 m_p + 1/8*m_c + m_c,
+                 m_p + 1/8*m_c + m_1]
+        r_m_t = [m_p + 9/8*m_c + m_x + sm_t, \
+                 m_p + 1/8*m_c + m_1,
+                 m_p + 1/8*m_c]
+        r_a_s = [Fs[0] / r_m_s[0], Fl[0] / r_m_s[1], Fl[0] / r_m_s[2]]
+        r_a_t = [Fs[0] / r_m_t[0], Fl[0] / r_m_t[1], Fl[0] / r_m_t[2]]
+        return r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op
+    else:
+        # TODO
+        raise Exception("Not implemented yet. Use only 1 phase if boosters are allowed.")
+
 def engine_isp(eng, pressure):
     return [pressure[i]*eng.isp_atm + (1-pressure[i])*eng.isp_vac for i in range(len(pressure))]
 

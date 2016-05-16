@@ -49,32 +49,29 @@ class Design:
                 self.cost = self.cost + smalltankcount * parts.RocketFuelTanks[i].cost
     def CalculatePerformance(self, dv, pressure):
         if self.sfb is None:
-            self.performance = physics.lf_performance(dv, \
-                    physics.engine_isp(self.mainengine, pressure), \
-                    physics.engine_force(self.mainenginecount, self.mainengine, pressure), \
+            self.performance = physics.lf_performance(dv,
+                    physics.engine_isp(self.mainengine, pressure),
+                    physics.engine_force(self.mainenginecount, self.mainengine, pressure),
                     pressure, self.mass - self.fuel, self.fuel*8/9)
         else:
-            # TODO
-            pass
+            self.performance = physics.sflf_performance(dv,
+                    physics.engine_isp(self.mainengine, pressure),
+                    physics.engine_isp(self.sfb, pressure),
+                    physics.engine_force(self.mainenginecount, self.mainengine, pressure),
+                    physics.engine_force(self.sfbcount, self.sfb, pressure),
+                    pressure,
+                    self.mass - self.fuel - self.sfbmountmass - self.sfbcount*self.sfb.m_full,
+                    self.fuel*8/9,
+                    self.sfbmountmass,
+                    self.sfbcount*self.sfb.m_full,
+                    self.sfbcount*self.sfb.m_empty)
     def EnoughAcceleration(self, min_acceleration):
-        if self.sfb is not None:
-            # TODO remove this
-            A_s = physics.engine_force(self.sfbcount, self.sfb, [1.0])[0] / self.mass
-            A_l = physics.engine_force(self.mainenginecount, self.mainengine, [1.0])[0] / \
-                    (self.mass - self.sfbmountmass - self.sfbcount*self.sfb.m_full)
-            if A_s < min_acceleration[0] or A_l < min_acceleration[0]:
-                return False
-            else:
-                return True
         dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
         for i in range(len(a_s)):
             if a_s[i] < min_acceleration[op[i]]:
                 return False
         return True
     def PrintPerformance(self):
-        if self.sfb is not None:
-            print("\t[unsupported for solid fuel boosters]")
-            return
         dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
         for i in range(len(dv)):
             p_str = ("%.2f atm" % p[i]) if p[i] > 0 else "vacuum  "
