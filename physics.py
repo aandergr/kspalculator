@@ -73,8 +73,16 @@ def lf_performance(dv, I_sp, F, p, m_p, m_c):
             y[n] = l(I_sp[n], m[n], 0) - dvn
         return y
     n = len(dv)-1
+    # this is to put extra in extra phase
+    dv = dv + [0]
+    I_sp = I_sp + [I_sp[n]]
+    F = F + [F[n]]
+    p = p + [p[n]]
+    n = n + 1
+    # call the solver
     x0 = [dv[n]] + n*[0]
     sol = fsolve(equations, x0)
+    # evaluate solution
     r_dv = [dv[i] for i in range(n)] + [sol[0]]
     r_p = p
     r_solid = (n+1)*[False]
@@ -84,7 +92,7 @@ def lf_performance(dv, I_sp, F, p, m_p, m_c):
             [m_p + f_e*m_c]
     r_a_s = [F[i] / r_m_s[i] for i in range(n+1)]
     r_a_t = [F[i] / r_m_t[i] for i in range(n+1)]
-    r_op = [i for i in range(n+1)]
+    r_op = [i for i in range(n)] + [n-1]
     return r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op
 
 def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
