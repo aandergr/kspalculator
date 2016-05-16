@@ -209,16 +209,19 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, size, count, sfb, 
 # TODO: add ship radially mounted fuel tank + engine combinations
 # TODO: add asparagous designs
 
-def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, bestgimbal = False, sfballowed = False):
+def FindDesigns(payload, pressure, dv, min_acceleration,
+        preferredsize = None, bestgimbal = False, sfballowed = False):
     """
     pressure: 0 = vacuum, 1 = kerbin
     """
     designs = []
     for eng in parts.LiquidFuelEngines:
         if eng.size is parts.RadialSize.RdMntd:
-            for size in [parts.RadialSize.Tiny, parts.RadialSize.Small, parts.RadialSize.Large, parts.RadialSize.ExtraLarge]:
+            for size in [parts.RadialSize.Tiny, parts.RadialSize.Small,
+                    parts.RadialSize.Large, parts.RadialSize.ExtraLarge]:
                 for count in [2, 3, 4, 6, 8]:
-                    d = CreateRadialLFEnginesDesign(payload, pressure, dv, min_acceleration, eng, size, count)
+                    d = CreateRadialLFEnginesDesign(payload, pressure, dv, min_acceleration,
+                            eng, size, count)
                     if d is not None:
                         designs.append(d)
                         break   # do not try more engines
@@ -229,7 +232,8 @@ def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, b
                                 # would look bad
                                 continue
                             for sfb in parts.SolidFuelBoosters:
-                                d = CreateRadialLFESFBDesign(payload, pressure, dv, min_acceleration, eng, size, count, sfb, sfbcount)
+                                d = CreateRadialLFESFBDesign(payload, pressure, dv, min_acceleration,
+                                        eng, size, count, sfb, sfbcount)
                                 if d is not None:
                                     designs.append(d)
         else:
@@ -242,7 +246,8 @@ def FindDesigns(payload, pressure, dv, min_acceleration, preferredsize = None, b
                         # would look bad
                         continue
                     for sfb in parts.SolidFuelBoosters:
-                        d = CreateSingleLFESFBDesign(payload, pressure, dv, min_acceleration, eng, sfb, sfbcount)
+                        d = CreateSingleLFESFBDesign(payload, pressure, dv, min_acceleration,
+                                eng, sfb, sfbcount)
                         if d is not None:
                             designs.append(d)
 

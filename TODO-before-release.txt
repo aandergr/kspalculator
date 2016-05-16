@@ -53,6 +53,8 @@ their priority.
 
 - Code quality (commenting, function names, code style, etc.)
 
+- Verify parts.py correctness for current KSP version
+
 - Heavily test everything, also create automated tests.
 
 - Documentation and User Interface.

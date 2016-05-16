@@ -45,7 +45,8 @@ def lf_needed_fuel(dv, I_sp, m_p):
     f_e = 1/8   # empty weight fraction
     def equations(m):
         N = len(m)
-        y =     [I_sp[i] * g_0 * log((m_p + m[0]*f_e + m[i])/(m_p + m[0]*f_e + m[i+1])) - dv[i] for i in range(N-1)]
+        y = [I_sp[i] * g_0 * log((m_p + m[0]*f_e + m[i])/(m_p + m[0]*f_e + m[i+1])) - dv[i]
+                for i in range(N-1)]
         y.append(I_sp[N-1]*g_0 * log((m_p + m[0]*f_e + m[N-1])/(m_p+m[0]*f_e)) - dv[N-1])
         return y
     (sol, infodict, ier, mesg) = fsolve(equations, [0 for i in range(len(I_sp))], full_output=True)
@@ -129,7 +130,8 @@ def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
         return y
     for lfe_phase in range(len(dv)-1, -1, -1):
         try:
-            (sol, infodict, ier, mesg) = fsolve(equations, [0 for i in range(len(I_spl))], full_output=True, args=lfe_phase)
+            (sol, infodict, ier, mesg) = fsolve(equations, [0 for i in range(len(I_spl))],
+                    full_output=True, args=lfe_phase)
         except ValueError:
             continue
         if ier:
@@ -182,4 +184,5 @@ def engine_isp(eng, pressure):
     return [pressure[i]*eng.isp_atm + (1-pressure[i])*eng.isp_vac for i in range(len(pressure))]
 
 def engine_force(count, eng, pressure):
-    return [count*(pressure[i]*eng.F_vac*eng.isp_atm/eng.isp_vac + (1-pressure[i])*eng.F_vac) for i in range(len(pressure))]
+    return [count*(pressure[i]*eng.F_vac*eng.isp_atm/eng.isp_vac + (1-pressure[i])*eng.F_vac)
+            for i in range(len(pressure))]

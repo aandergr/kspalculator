@@ -15,11 +15,19 @@ A safe kerbin launch is "905:13:1.0 3650:13:0.18".
 
 parser = ArgumentParser(description='Determine best rocket design', epilog=epilog)
 parser.add_argument('payload', type=float, help='Payload in kg')
-parser.add_argument('dvtuples', metavar='deltav[:min_acceleration[:pressure]]', nargs='+', help='Tuples of required delta v, minimum acceleration and environment pressure at each flight phase. Defaults for minimum acceleration is 0 m/s² and for pressure 0 ATM (= vacuum)')
-parser.add_argument('-c', '--cheapest', action='store_true', help='Sort by cost instead of weight')
-parser.add_argument('-b', '--boosters', action='store_true', help='Allow adding solid fuel boosters')
-parser.add_argument('-S', '--preferred-size', choices=['tiny', 'small', 'large', 'extralarge'], help='Preferred width of the stage')
-parser.add_argument('-g', '--best-gimbal', action='store_true', help='Not only compare whether engine has gimbal or not, but also the maximum trust vectoring angle')
+parser.add_argument('dvtuples', metavar='deltav[:min_acceleration[:pressure]]', nargs='+',
+        help='Tuples of required delta v, minimum acceleration and environment pressure at each '
+        'flight phase. Defaults for minimum acceleration is 0 m/s² and for '
+        'pressure 0 ATM (= vacuum)')
+parser.add_argument('-c', '--cheapest', action='store_true',
+        help='Sort by cost instead of weight')
+parser.add_argument('-b', '--boosters', action='store_true',
+        help='Allow adding solid fuel boosters')
+parser.add_argument('-S', '--preferred-size', choices=['tiny', 'small', 'large', 'extralarge'],
+        help='Preferred width of the stage')
+parser.add_argument('-g', '--best-gimbal', action='store_true',
+        help='Not only compare whether engine has gimbal or not, but also the maximum '
+        'trust vectoring angle')
 parser.add_argument('--keep', action='store_true', help='Do not hide bad solutions')
 
 args = parser.parse_args()
