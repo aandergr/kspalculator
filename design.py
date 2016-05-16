@@ -66,6 +66,8 @@ class Design:
                     self.sfbcount*self.sfb.m_full,
                     self.sfbcount*self.sfb.m_empty)
     def EnoughAcceleration(self, min_acceleration):
+        if self.performance is None:
+            return False
         dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
         for i in range(len(a_s)):
             if a_s[i] < min_acceleration[op[i]]:

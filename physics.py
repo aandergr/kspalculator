@@ -152,6 +152,7 @@ def sflf_performance(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t):
             print("sflf_performance() got very bad input.")
             print(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t)
             print(dv_s, l(I_spl[0], m_c, 0))
+            return None
         def equations(x):
             dv_x, m_1 = x
             return [ dv[0] - dv_s - l(I_spl[0], m_c, m_1),
