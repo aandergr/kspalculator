@@ -43,7 +43,11 @@ g_0 = 9.80665
 
 def lf_needed_fuel(dv, I_sp, m_p):
     f_e = 1/8   # empty weight fraction
-    return m_p/f_e * ((1/f_e) / (1+(1/f_e)-exp(1/g_0*fsum([dv[i]/I_sp[i] for i in range(len(dv))]))) - 1)
+    m_c = m_p/f_e * ((1/f_e) / (1+(1/f_e)-exp(1/g_0*fsum([dv[i]/I_sp[i] for i in range(len(dv))]))) - 1)
+    if m_c < 0:
+        warn("negative m_c occured in lf_needed_fuel()")
+        return None
+    return m_c
 
 def lf_performance(dv, I_sp, F, p, m_p, m_c):
     f_e = 1/8   # empty weight fraction
