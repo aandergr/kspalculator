@@ -1,4 +1,4 @@
-from math import log
+from math import log, exp, fsum
 from scipy.optimize import fsolve
 from warnings import warn
 
@@ -43,19 +43,7 @@ g_0 = 9.80665
 
 def lf_needed_fuel(dv, I_sp, m_p):
     f_e = 1/8   # empty weight fraction
-    def equations(m):
-        N = len(m)
-        y = [I_sp[i] * g_0 * log((m_p + m[0]*f_e + m[i])/(m_p + m[0]*f_e + m[i+1])) - dv[i]
-                for i in range(N-1)]
-        y.append(I_sp[N-1]*g_0 * log((m_p + m[0]*f_e + m[N-1])/(m_p+m[0]*f_e)) - dv[N-1])
-        return y
-    (sol, infodict, ier, mesg) = fsolve(equations, [0 for i in range(len(I_sp))], full_output=True)
-    if not ier:
-        return None
-    if min(sol) < 0:
-        warn("There was a negative mass")
-        return None
-    return sol[0]
+    return m_p/f_e * ((1/f_e) / (1+(1/f_e)-exp(1/g_0*fsum([dv[i]/I_sp[i] for i in range(len(dv))]))) - 1)
 
 def lf_performance(dv, I_sp, F, p, m_p, m_c):
     f_e = 1/8   # empty weight fraction
