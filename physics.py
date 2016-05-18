@@ -14,7 +14,7 @@ from warnings import warn
 
 # *_performance() functions return a tuple of
 #  - dv:    Array of delta v for each flight phase, extraneous dv being added to
-#           ultimate phase,
+#           extra phase,
 #  - p:     Pressure used for calculation for each flight phase (This is not
 #           actually used for calculation. Given Isp and F are used. We return
 #           it as it might be of interest for user),
