@@ -41,6 +41,12 @@ from warnings import warn
 # only used for I_sp conversion
 g_0 = 9.80665
 
+def dv_s(Isp, m_s, m_t, m_p, m_x, m_c):
+    return g_0 * Isp * log((m_p + 9/8*m_c + m_x + m_s) / (m_p + 9/8*m_c + m_x + m_t))
+
+def dv_l(Isp, m_s, m_t, m_p, m_c):
+    return g_0 * Isp * log((m_p + 1/8*m_c + m_s) / (m_p + 1/8*m_c + m_t))
+
 def lf_needed_fuel(dv, I_sp, m_p):
     f_e = 1/8   # empty weight fraction
     m_c = m_p/f_e * ((1/f_e) / (1+(1/f_e)-exp(1/g_0*fsum([dv[i]/I_sp[i] for i in range(len(dv))]))) - 1)
@@ -92,46 +98,53 @@ def lf_performance(dv, I_sp, F, p, m_p, m_c):
     r_op = [i for i in range(n)] + [n-1]
     return r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op
 
+
 def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
-    def equations(m, *args):
-        def s(Isp, m_s, m_t, m_c):
-            return g_0 * Isp * log((m_p + 9/8*m_c + m_x + m_s) / (m_p + 9/8*m_c + m_x + m_t))
-        def l(Isp, m_s, m_t, m_c):
-            return g_0 * Isp * log((m_p + 1/8*m_c + m_s) / (m_p + 1/8*m_c + m_t))
-        lfe_phase, = args
-        n = len(m)-1
-        y = []  # TODO: preallocate this
-        for i in range(n):
-            if i == 0:
-                if lfe_phase > 0:
-                    y.append(s(I_sps[0], sm_s, m[1], m[0]) - dv[0])
-                else:
-                    y.append(s(I_sps[0], sm_s, sm_t, m[0]) + l(I_spl[0], m[0], m[1], m[0]) - dv[0])
-            else:
-                if lfe_phase > i:
-                    y.append(s(I_sps[i], m[i], m[i+1], m[0]) - dv[i])
-                elif lfe_phase < i:
-                    y.append(l(I_spl[i], m[i], m[i+1], m[0]) - dv[i])
-                else:
-                    y.append(s(I_sps[i], m[i], sm_t, m[0]) + l(I_spl[i], m[0], m[i+1], m[0]) - dv[i])
-        if lfe_phase < n:
-            y.append(l(I_spl[n], m[n], 0, m[0]) - dv[n])
+    def s(Isp, m_s, m_t, m_c):
+        return dv_s(Isp, m_s, m_t, m_p, m_x, m_c)
+    n = len(dv)-1
+    f_limits = (n+1) * [None]
+    def mc_solid(i):
+        return ((sm_s-sm_t)/(exp(fsum([dv[k]/I_sps[k] for k in range(0,i+1)])/g_0)-1)-m_p-sm_t-m_x)*8/9
+    for i in range(n+1):
+        f_limits[i] = mc_solid(i)
+        if f_limits[i] < 0:
+            f_limits[i+1 : n+1] = (n-i) * [-1]
+            break
+    else:
+        # SFBs are too strong
+        return None
+    def f_adjust(mc, d):
+        if d<=0:
+            for i in range(0 if d==0 else f,n+1):
+                if f_limits[i] < mc:
+                    return i
         else:
-            s_ig = sm_s if n == 0 else m[n]
-            y.append(s(I_sps[n], s_ig, sm_t, m[0]) + l(I_spl[n], m[0], 0, m[0]) - dv[n])
-        return y
-    for lfe_phase in range(len(dv)-1, -1, -1):
-        try:
-            (sol, infodict, ier, mesg) = fsolve(equations, [0 for i in range(len(I_spl))],
-                    full_output=True, args=lfe_phase)
-        except ValueError:
-            continue
-        if ier:
-            if min(sol) < 0:
-                # in this case no warning. only means that SFBs were too strong
-                return None
-            return sol[0]
-    return None
+            if f == 0:
+                return 0
+            for i in range(f-1,-1,-1):
+                if f_limits[i] >= mc:
+                    return i+1
+    f = f_adjust(0,0)
+    precision = 0.001
+    def mc_improve(mc_old):
+        return lf_needed_fuel([fsum(dv[0:f+1])-s(fsum(I_sps[0:f+1]),sm_s,sm_t,mc_old)]+ \
+            dv[f+1:n+1], I_spl[f:n+2], m_p)
+    m_c = 2 * [None]
+    current = 1
+    m_c[0] = mc_improve(0)
+    if m_c[0] is None:
+            return None
+    f = f_adjust(m_c[0],1)
+    while True:
+        m_c[current] = mc_improve(m_c[(current+1)%2])
+        if m_c[current] is None:
+            return None
+        if m_c[current] - m_c[(current+1)%2] < precision:
+            return m_c[current]
+        f = f_adjust(m_c[current],1)
+        current = (current+1)%2
+
 
 def sflf_performance(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t):
     def s(Isp, m_s, m_t):
