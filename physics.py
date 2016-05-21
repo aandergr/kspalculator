@@ -57,45 +57,21 @@ def lf_needed_fuel(dv, I_sp, m_p):
 
 def lf_performance(dv, I_sp, F, p, m_p, m_c):
     f_e = 1/8   # empty weight fraction
-    def l(Isp, m_s, m_t):
-        return g_0 * Isp * log((m_p + f_e*m_c + m_s) / (m_p + f_e*m_c + m_t))
-    def equations(x):
-        dvn = x[0]
-        m = x
-        n = len(m)-1
-        y = len(m)*[0]
-        # case n=0 does not exist, as we have at least two phases including
-        # extra phase.
-        if n == 1:
-            y[0] = l(I_sp[0], m_c, m[1]) - dv[0]
-            y[1] = l(I_sp[1], m[1], 0) - dvn
-        else:
-            y[0] = l(I_sp[0], m_c, m[1]) - dv[0]
-            for i in range(1,n):
-                y[i] = l(I_sp[i], m[i], m[i+1]) - dv[i]
-            y[n] = l(I_sp[n], m[n], 0) - dvn
-        return y
-    n = len(dv)-1
-    # this is to put extra in extra phase
-    dv = dv + [0]
-    I_sp = I_sp + [I_sp[n]]
-    F = F + [F[n]]
-    p = p + [p[n]]
-    n = n + 1
-    # call the solver
-    x0 = [dv[n]] + n*[0]
-    sol = fsolve(equations, x0)
-    # evaluate solution
-    r_dv = [dv[i] for i in range(n)] + [sol[0]]
-    r_p = p
+    def m_t(m_s, dv, I_sp):
+        return m_s * exp(-dv/(I_sp*g_0))
+    def dvl(m_s, m_t, I_sp):
+        return g_0 * I_sp * log(m_s/m_t)
+    n = len(dv)
+    r_m_s = [m_p + f_e*m_c + m_c] + n*[None]
+    for i in range(1,n+1):
+        r_m_s[i] = m_t(r_m_s[i-1], dv[i-1], I_sp[i-1])
+    r_m_t = r_m_s[1:] + [m_p + f_e*m_c]
+    r_dv = dv + [dvl(r_m_s[n], r_m_t[n], I_sp[n-1])]
+    r_p = p + [0]
     r_solid = (n+1)*[False]
-    r_m_s = [m_p + f_e*m_c + m_c] + \
-            [m_p + f_e*m_c + sol[i] for i in range(1,n+1)]
-    r_m_t = [m_p + f_e*m_c + sol[i] for i in range(1,n+1)] + \
-            [m_p + f_e*m_c]
-    r_a_s = [F[i] / r_m_s[i] for i in range(n+1)]
-    r_a_t = [F[i] / r_m_t[i] for i in range(n+1)]
-    r_op = [i for i in range(n)] + [n-1]
+    r_a_s = [F[i if i != n else i-1] / r_m_s[i] for i in range(n+1)]
+    r_a_t = [F[i if i != n else i-1] / r_m_t[i] for i in range(n+1)]
+    r_op = list(range(n)) + [n-1]
     return r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op
 
 def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
