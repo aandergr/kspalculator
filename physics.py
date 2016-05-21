@@ -1,5 +1,4 @@
 from math import log, exp, fsum
-from scipy.optimize import fsolve
 from warnings import warn
 
 # *_needed_fuel() functions return needed kilograms of liquid combustible for
@@ -41,7 +40,11 @@ from warnings import warn
 # only used for I_sp conversion
 g_0 = 9.80665
 
-# TODO: either use them in all places where possible or remove them from global namespace
+# some formulations of the rocket equation
+def g_m_t(m_s, dv, I_sp):
+    return m_s * exp(-dv/(I_sp*g_0))
+def g_dv(m_s, m_t, I_sp):
+    return g_0 * I_sp * log(m_s/m_t)
 def dv_s(Isp, m_s, m_t, m_p, m_x, m_c):
     return g_0 * Isp * log((m_p + 9/8*m_c + m_x + m_s) / (m_p + 9/8*m_c + m_x + m_t))
 def dv_l(Isp, m_s, m_t, m_p, m_c):
@@ -57,16 +60,12 @@ def lf_needed_fuel(dv, I_sp, m_p):
 
 def lf_performance(dv, I_sp, F, p, m_p, m_c):
     f_e = 1/8   # empty weight fraction
-    def m_t(m_s, dv, I_sp):
-        return m_s * exp(-dv/(I_sp*g_0))
-    def dvl(m_s, m_t, I_sp):
-        return g_0 * I_sp * log(m_s/m_t)
     n = len(dv)
     r_m_s = [m_p + f_e*m_c + m_c] + n*[None]
     for i in range(1,n+1):
-        r_m_s[i] = m_t(r_m_s[i-1], dv[i-1], I_sp[i-1])
+        r_m_s[i] = g_m_t(r_m_s[i-1], dv[i-1], I_sp[i-1])
     r_m_t = r_m_s[1:] + [m_p + f_e*m_c]
-    r_dv = dv + [dvl(r_m_s[n], r_m_t[n], I_sp[n-1])]
+    r_dv = dv + [g_dv(r_m_s[n], r_m_t[n], I_sp[n-1])]
     r_p = p + [0]
     r_solid = (n+1)*[False]
     r_a_s = [F[i if i != n else i-1] / r_m_s[i] for i in range(n+1)]
@@ -120,45 +119,45 @@ def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
         f = f_adjust(m_c[current],1)
         current = (current+1)%2
 
-
 def sflf_performance(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t):
-    def s(Isp, m_s, m_t):
-        return g_0 * Isp * log((m_p + 9/8*m_c + m_x + m_s) / (m_p + 9/8*m_c + m_x + m_t))
-    def l(Isp, m_s, m_t):
-        return g_0 * Isp * log((m_p + 1/8*m_c + m_s) / (m_p + 1/8*m_c + m_t))
-    n = len(dv)-1
-    if n == 0:
-        dv_s = s(I_sps[0], sm_s, sm_t)
-        if (dv_s > dv[0] or l(I_spl[0], m_c, 0) + dv_s < dv[0]):
-            # TODO: investigate and fix this
-            print("sflf_performance() got very bad input.")
-            print(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t)
-            print(dv_s, l(I_spl[0], m_c, 0))
-            return None
-        def equations(x):
-            dv_x, m_1 = x
-            return [ dv[0] - dv_s - l(I_spl[0], m_c, m_1),
-                    dv_x - l(I_spl[0], m_1, 0) ]
-        x0 = [0, 0]
-        s = fsolve(equations, x0)
-        dv_x, m_1 = s
-        # return
-        r_dv = [dv_s, dv[0] - dv_s, dv_x]
-        r_op = [0, 0, 0]
-        r_p = 3*[p[0]]
-        r_solid = [True, False, False]
-        r_m_s = [m_p + 9/8*m_c + m_x + sm_s, \
-                 m_p + 1/8*m_c + m_c,
-                 m_p + 1/8*m_c + m_1]
-        r_m_t = [m_p + 9/8*m_c + m_x + sm_t, \
-                 m_p + 1/8*m_c + m_1,
-                 m_p + 1/8*m_c]
-        r_a_s = [Fs[0] / r_m_s[0], Fl[0] / r_m_s[1], Fl[0] / r_m_s[2]]
-        r_a_t = [Fs[0] / r_m_t[0], Fl[0] / r_m_t[1], Fl[0] / r_m_t[2]]
-        return r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op
-    else:
-        # TODO
-        raise Exception("Not implemented yet. Use only 1 phase if boosters are allowed.")
+    n = len(dv)
+    r_m_t = (n+2)*[None]
+    r_m_s = [m_p + 9/8*m_c + m_x + sm_s] + (n+1)*[None]
+    r_op = (n+2)*[None]
+    r_solid = (n+2)*[None]
+    r_dv = (n+2)*[None]
+    # sfb only phases
+    i = 0
+    while g_dv(r_m_s[i], m_p + 9/8*m_c + m_x + sm_t, I_sps[i]) >= dv[i]:
+        r_m_t[i] = g_m_t(r_m_s[i], dv[i], I_sps[i])
+        r_m_s[i+1] = r_m_t[i]
+        r_dv[i] = g_dv(r_m_s[i], r_m_t[i], I_sps[i])   # inefficient, but double-checking
+        r_solid[i] = True
+        r_op[i] = i
+        i = i+1
+    # sfb + lfe phase
+    r_m_t[i] = m_p + 9/8*m_c + m_x + sm_t
+    r_dv[i] = g_dv(r_m_s[i], r_m_t[i], I_sps[i])
+    r_solid[i] = True
+    r_op[i] = i
+    r_m_s[i+1] = m_p + 9/8*m_c
+    r_dv[i+1] = dv[i] - r_dv[i]
+    r_m_t[i+1] = g_m_t(r_m_s[i+1], r_dv[i+1], I_spl[i])
+    r_solid[i+1] = False
+    r_op[i+1] = i
+    # lfe only phases
+    for j in range(i+2, n+2):
+        # Why'd you have to go and make things so complicated?...
+        r_m_s[j] = r_m_t[j-1]
+        r_op[j] = j-1 if j != n+1 else j-2
+        r_solid[j] = False
+        r_m_t[j] = g_m_t(r_m_s[j], dv[j-1], I_spl[j-1]) if j != n+1 else \
+                m_p + 1/8*m_c
+        r_dv[j] = g_dv(r_m_s[j], r_m_t[j], I_spl[r_op[j]])   # inefficient, but double-checking
+    r_a_s = [(Fs[r_op[j]] if r_solid[j] else Fl[r_op[j]])/r_m_s[j] for j in range(n+2)]
+    r_a_t = [(Fs[r_op[j]] if r_solid[j] else Fl[r_op[j]])/r_m_t[j] for j in range(n+2)]
+    r_p = [p[r_op[j]] for j in range(n+2)]
+    return r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op
 
 def engine_isp(eng, pressure):
     return [pressure[i]*eng.isp_atm + (1-pressure[i])*eng.isp_vac for i in range(len(pressure))]
