@@ -41,9 +41,9 @@ from warnings import warn
 # only used for I_sp conversion
 g_0 = 9.80665
 
+# TODO: either use them in all places where possible or remove them from global namespace
 def dv_s(Isp, m_s, m_t, m_p, m_x, m_c):
     return g_0 * Isp * log((m_p + 9/8*m_c + m_x + m_s) / (m_p + 9/8*m_c + m_x + m_t))
-
 def dv_l(Isp, m_s, m_t, m_p, m_c):
     return g_0 * Isp * log((m_p + 1/8*m_c + m_s) / (m_p + 1/8*m_c + m_t))
 
@@ -97,7 +97,6 @@ def lf_performance(dv, I_sp, F, p, m_p, m_c):
     r_a_t = [F[i] / r_m_t[i] for i in range(n+1)]
     r_op = [i for i in range(n)] + [n-1]
     return r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op
-
 
 def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
     def s(Isp, m_s, m_t, m_c):
