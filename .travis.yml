@@ -3,4 +3,5 @@ python:
  - "3.4"
  - "3.5"
  - "nightly"
+install: pip install scipy
 script: ./unittests.py
