@@ -1,9 +1,9 @@
-*Things which should be done before releasing this software, in order of
-their priority.*
+**Things which should be done before releasing this software, in order of
+their priority.**
 
 * Consider remaining types of engines, i.e.
  * Ion propulsion,
- * Monopropellant engines,
+ * Monopropellant engines.
 
 * Consider that engines with low height as well as radially mounted engines
   might be advantageous (e.g. for landers)
@@ -24,7 +24,7 @@ their priority.*
 
 * One more time: Test and review code.
 
-*Scheduled for later (after first release):*
+**Scheduled for later (after first release):**
 
 * Consider adapters between different radial sizes.
  * There should be an option for upper radial size.
