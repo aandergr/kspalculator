@@ -82,9 +82,9 @@ class Design:
                     (solid_str, i+1, dv[i], p_str, a_s[i], a_t[i], m_s[i]/1000.0, m_t[i]/1000.0))
     def SetSFBLimit(self, pressure, acc):
         dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
-        limit = 1.0
+        limit = 0.0
         for i in range(len(a_s)):
-            if solid[i] and acc[i]/a_s[i] < limit:
+            if solid[i] and acc[i]/a_s[i] > limit:
                 limit = acc[i]/a_s[i]
         if limit < 0.95:
             self.notes.append("You might limit SFB thrust to %.1f %%" % (ceil(limit*200)/2.0))
