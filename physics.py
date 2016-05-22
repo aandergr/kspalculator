@@ -1,5 +1,5 @@
 from math import log, exp, fsum
-from warnings import warn
+#from warnings import warn
 
 # *_needed_fuel() functions return needed kilograms of liquid combustible for
 # given
@@ -54,8 +54,9 @@ def lf_needed_fuel(dv, I_sp, m_p):
     f_e = 1/8   # empty weight fraction
     m_c = m_p/f_e * ((1/f_e) / (1+(1/f_e)-exp(1/g_0*fsum([dv[i]/I_sp[i] for i in range(len(dv))]))) - 1)
     if m_c < 0:
-        warn("delta-v requirements too strong for some engines. "\
-                "Consider splitting up into multiple stages.")
+        # TODO: maybe we should still warn in some cases, in a non-aggressive way
+        #warn("delta-v requirements too strong for some engines. "\
+        #        "Consider splitting up into multiple stages.")
         return None
     return m_c
 
