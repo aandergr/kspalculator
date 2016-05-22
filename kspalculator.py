@@ -70,5 +70,5 @@ else:
     D = sorted(D, key=lambda dsg: dsg.mass)
 
 for d in D:
-    d.printinfo()
+    d.PrintInfo()
     print("")

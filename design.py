@@ -91,7 +91,7 @@ class Design:
                 limit = acc[i]/a_s[i]
         if limit < 0.95:
             self.notes.append("You might limit SFB thrust to %.1f %%" % (ceil(limit*200)/2.0))
-    def printinfo(self):
+    def PrintInfo(self):
         if self.mainenginecount == 1:
             print("%s" % self.mainengine.name)
         else:
