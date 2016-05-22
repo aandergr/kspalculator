@@ -32,7 +32,10 @@ class Design:
         self.mass = self.mass + self.sfbmountmass + sfbcount*sfb.m_full
         self.cost = self.cost + sfbcount*sfb.cost
     def AddLiquidFuelTanks(self, lf):
-        """lf should be full tank mass"""
+        # lf is full tank mass
+        if self.mainengine.name == "LFB Twin-Boar":
+            lf = max(lf, 36000)
+            self.notes.append("6400 units of liquid fuel are already included in the engine")
         smalltankcount = ceil(lf / parts.RocketFuelTanks[parts.SmallestTank[self.size]].m_full)
         self.fuel = smalltankcount * parts.RocketFuelTanks[parts.SmallestTank[self.size]].m_full
         self.mass = self.mass + self.fuel

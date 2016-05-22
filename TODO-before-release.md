@@ -5,7 +5,6 @@ their priority.*
  * Nuclear fission motor,
  * Ion propulsion,
  * Monopropellant engines,
- * Twin-Boar, having tank included.
 
 * Consider that engines with low height as well as radially mounted engines
   might be advantageous (e.g. for landers)

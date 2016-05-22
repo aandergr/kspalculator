@@ -63,9 +63,11 @@ LiquidFuelEngines = [
         LiquidFuelEngine(RadialSize.Large, 'RE-L10 Poodle',  1300, 1750, 90,  350, 250000, 4.5,ResearchNode.HeavyRocketry),
         LiquidFuelEngine(RadialSize.Large, 'RE-I5 Skipper',  5300, 3000, 280, 320, 650000, 2, ResearchNode.HeavyRocketry),
         LiquidFuelEngine(RadialSize.Large, 'RE-M3 Mainsail', 13000,6000, 285, 320, 1500000,2, ResearchNode.HeavierRocketry),
+        LiquidFuelEngine(RadialSize.Large, 'LFB Twin-Boar',  11250,6500, 280, 300, 2000000,1.5,ResearchNode.HeavierRocketry),
         LiquidFuelEngine(RadialSize.ExtraLarge, 'KR-2L+ Rhino', 25000,9000, 255, 340, 2000000,4,ResearchNode.VeryHeavyRocketry),
         LiquidFuelEngine(RadialSize.ExtraLarge, 'KS-25x4 Mammoth', 39000,15000, 295, 315, 4000000,2,ResearchNode.VeryHeavyRocketry) ]
 
+# Twin-Boar is the engine as listed above, with forced addition of the 36 ton large liquid fuel tank.
 
 # liquid fuel tank quantities.
 # empty weight is 1/9 of full weight.
