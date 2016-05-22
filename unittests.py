@@ -11,13 +11,13 @@ class TestPhysics(TestCase):
         for i in range(len(first)):
             self.assertAlmostEqual(first[i], second[i], places=1)
     def test_lf_needed_fuel(self):
-        m_c = physics.lf_needed_fuel([1750, 580, 310, 792], 4*[345], 1500)
+        m_c = physics.lf_needed_fuel([1750, 580, 310, 792], 4*[345], 1500, 1/8)
         self.assertAlmostEqual(m_c, 3378.94, places=1)
-        m_c = physics.lf_needed_fuel([1750, 580, 310, 792], 3*[345]+[300], 1500)
+        m_c = physics.lf_needed_fuel([1750, 580, 310, 792], 3*[345]+[300], 1500, 1/8)
         self.assertAlmostEqual(m_c, 3625.64, places=1)
     def test_lf_performance(self):
         r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op = \
-                physics.lf_performance([1750,580,310,792], 4*[345], 4*[60000], 4*[0], 2005, 5000)
+                physics.lf_performance([1750,580,310,792], 4*[345], 4*[60000], 4*[0], 2005, 5000, 1/8)
         self.assertListAlmostEqual(r_dv, [1750, 580, 310, 792, 171.56])
         self.assertListEqual(r_p, 5*[0])
         self.assertListEqual(r_solid, 5*[False])

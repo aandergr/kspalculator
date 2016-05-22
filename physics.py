@@ -50,8 +50,7 @@ def dv_s(Isp, m_s, m_t, m_p, m_x, m_c):
 def dv_l(Isp, m_s, m_t, m_p, m_c):
     return g_0 * Isp * log((m_p + 1/8*m_c + m_s) / (m_p + 1/8*m_c + m_t))
 
-def lf_needed_fuel(dv, I_sp, m_p):
-    f_e = 1/8   # empty weight fraction
+def lf_needed_fuel(dv, I_sp, m_p, f_e):
     m_c = m_p/f_e * ((1/f_e) / (1+(1/f_e)-exp(1/g_0*fsum([dv[i]/I_sp[i] for i in range(len(dv))]))) - 1)
     if m_c < 0:
         # TODO: maybe we should still warn in some cases, in a non-aggressive way
@@ -60,8 +59,7 @@ def lf_needed_fuel(dv, I_sp, m_p):
         return None
     return m_c
 
-def lf_performance(dv, I_sp, F, p, m_p, m_c):
-    f_e = 1/8   # empty weight fraction
+def lf_performance(dv, I_sp, F, p, m_p, m_c, f_e):
     n = len(dv)
     r_m_s = [m_p + f_e*m_c + m_c] + n*[None]
     for i in range(1,n+1):

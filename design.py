@@ -10,7 +10,10 @@ class Design:
         self.mainengine = mainengine
         self.mainenginecount = mainenginecount
         self.size = size
-        self.fuel = 0
+        self.liquidfuel = None
+        self.specialfuel = None
+        self.specialfueltype = None
+        self.specialfuelunitmass = None
         self.notes = []
         self.sfb = None
         self.sfbcount = 0
@@ -37,8 +40,8 @@ class Design:
             lf = max(lf, 36000)
             self.notes.append("6400 units of liquid fuel are already included in the engine")
         smalltankcount = ceil(lf / parts.RocketFuelTanks[parts.SmallestTank[self.size]].m_full)
-        self.fuel = smalltankcount * parts.RocketFuelTanks[parts.SmallestTank[self.size]].m_full
-        self.mass = self.mass + self.fuel
+        self.liquidfuel = smalltankcount * parts.RocketFuelTanks[parts.SmallestTank[self.size]].m_full
+        self.mass = self.mass + self.liquidfuel
         # Fuel tank calculation:
         # We use that
         # - Tank size is 2^n times the size of smallest tank with that radius
@@ -50,21 +53,54 @@ class Design:
                 smalltankcount = smalltankcount // 2
             else:
                 self.cost = self.cost + smalltankcount * parts.RocketFuelTanks[i].cost
+    def AddAtomicFuelTanks(self, af):
+        # lf is full tank mass
+        # Adomic Fuel is liquid fuel without oxidizer.
+        f_f = parts.AtomicTankFactor
+        f_e = self.mainengine.f_e
+        smalltankcount = ceil(af / (parts.RocketFuelTanks[parts.SmallestTank[self.size]].m_full*f_f))
+        self.specialfuel = smalltankcount * parts.RocketFuelTanks[parts.SmallestTank[self.size]].m_full*f_f
+        self.specialfueltype = "Atomic fuel"
+        self.specialfuelunitmass = 5
+        self.notes.append("Atomic fuel is regular liquid fuel w/out oxidizer (remove oxidizer in VAB!)")
+        self.mass = self.mass + self.specialfuel
+        # Fuel tank calculation:
+        # We use that
+        # - Tank size is 2^n times the size of smallest tank with that radius
+        # - It is cheapest to use the biggest tank possible
+        for i in range(parts.SmallestTank[self.size], parts.BiggestTank[self.size]+1):
+            if i != parts.BiggestTank[self.size]:
+                if smalltankcount % 2 != 0:
+                    self.cost = self.cost + parts.RocketFuelTanks[i].cost
+                smalltankcount = smalltankcount // 2
+            else:
+                self.cost = self.cost + smalltankcount * parts.RocketFuelTanks[i].cost
+        # black magic to quit cost of saved oxidizer
+        self.cost = self.cost - self.specialfuel/(1+f_e)*1.1/0.9*0.04
     def CalculatePerformance(self, dv, pressure):
-        if self.sfb is None:
+        if self.sfb is None and self.liquidfuel is not None:
+            # liquid fuel only
             self.performance = physics.lf_performance(dv,
                     physics.engine_isp(self.mainengine, pressure),
                     physics.engine_force(self.mainenginecount, self.mainengine, pressure),
-                    pressure, self.mass - self.fuel, self.fuel*8/9)
+                    pressure, self.mass - self.liquidfuel, self.liquidfuel*8/9, 1/8)
+        elif self.sfb is None and self.liquidfuel is None:
+            # atomic fuel, monopropellant or xenon
+            f_e = self.mainengine.f_e
+            self.performance = physics.lf_performance(dv,
+                    physics.engine_isp(self.mainengine, pressure),
+                    physics.engine_force(self.mainenginecount, self.mainengine, pressure),
+                    pressure, self.mass - self.specialfuel, self.specialfuel/(1+f_e), f_e)
         else:
+            # liquid fuel + solid fuel
             self.performance = physics.sflf_performance(dv,
                     physics.engine_isp(self.mainengine, pressure),
                     physics.engine_isp(self.sfb, pressure),
                     physics.engine_force(self.mainenginecount, self.mainengine, pressure),
                     physics.engine_force(self.sfbcount, self.sfb, pressure),
                     pressure,
-                    self.mass - self.fuel - self.sfbmountmass - self.sfbcount*self.sfb.m_full,
-                    self.fuel*8/9,
+                    self.mass - self.liquidfuel - self.sfbmountmass - self.sfbcount*self.sfb.m_full,
+                    self.liquidfuel*8/9,
                     self.sfbmountmass,
                     self.sfbcount*self.sfb.m_full,
                     self.sfbcount*self.sfb.m_empty)
@@ -96,9 +132,14 @@ class Design:
             print("%s" % self.mainengine.name)
         else:
             print("%i * %s, radially mounted" % (self.mainenginecount, self.mainengine.name))
-        print("\tTotal Mass: %i kg (including payload and full tanks)" % self.mass)
-        print("\tCost: %i" % self.cost)
-        print("\tLiquid fuel: %i units (%i kg full tank mass)" % (self.fuel*8/9*0.2, self.fuel))
+        print("\tTotal Mass: %.0f kg (including payload and full tanks)" % self.mass)
+        print("\tCost: %.0f" % self.cost)
+        if self.liquidfuel is not None:
+            print("\tLiquid fuel: %.0f units (%.0f kg full tank mass)" % (self.liquidfuel*8/9*0.2, self.liquidfuel))
+        if self.specialfuel is not None:
+            print("\t%s: %.0f units (%.0f kg full tank mass)" % \
+                    (self.specialfueltype, self.specialfuel/(self.mainengine.f_e+1)/self.specialfuelunitmass,
+                        self.specialfuel))
         print("\tGimbal: %.1f °" % self.mainengine.tvc)
         print("\tRadial size: %s" % self.size.name)
         if self.sfb is None:
@@ -157,10 +198,23 @@ class Design:
 
 def CreateSingleLFEngineDesign(payload, pressure, dv, acc, eng):
     design = Design(payload, eng, 1, eng.size)
-    lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.mass)
+    lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.mass, 1/8)
     if lf is None:
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
+    design.CalculatePerformance(dv, pressure)
+    if not design.EnoughAcceleration(acc):
+        return None
+    return design
+
+def CreateAtomicRocketMotorDesign(payload, pressure, dv, acc):
+    design = Design(payload, parts.AtomicRocketMotor, 1, parts.RadialSize.Small)
+    f_e = parts.AtomicRocketMotor.f_e
+    af = physics.lf_needed_fuel(dv, physics.engine_isp(parts.AtomicRocketMotor, pressure),
+            design.mass, f_e)
+    if af is None:
+        return None
+    design.AddAtomicFuelTanks((1+f_e) * af)
     design.CalculatePerformance(dv, pressure)
     if not design.EnoughAcceleration(acc):
         return None
@@ -184,7 +238,7 @@ def CreateSingleLFESFBDesign(payload, pressure, dv, acc, eng, sfb, sfbcount):
 
 def CreateRadialLFEnginesDesign(payload, pressure, dv, acc, eng, size, count):
     design = Design(payload, eng, count, size)
-    lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.mass)
+    lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.mass, 1/8)
     if lf is None:
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
@@ -214,10 +268,11 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, size, count, sfb, 
 
 def FindDesigns(payload, pressure, dv, min_acceleration,
         preferredsize = None, bestgimbal = False, sfballowed = False):
-    """
-    pressure: 0 = vacuum, 1 = kerbin
-    """
+    # pressure: 0 = vacuum, 1 = kerbin
     designs = []
+    d = CreateAtomicRocketMotorDesign(payload, pressure, dv, min_acceleration)
+    if d is not None:
+        designs.append(d)
     for eng in parts.LiquidFuelEngines:
         if eng.size is parts.RadialSize.RdMntd:
             for size in [parts.RadialSize.Tiny, parts.RadialSize.Small,

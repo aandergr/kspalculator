@@ -2,7 +2,6 @@
 their priority.*
 
 * Consider remaining types of engines, i.e.
- * Nuclear fission motor,
  * Ion propulsion,
  * Monopropellant engines,
 

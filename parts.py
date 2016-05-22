@@ -20,6 +20,7 @@ class ResearchNode(Enum):
     PropulsionSystems = 52
     HeavierRocketry = 61        # depends on HeavyRocketry
     PrecisionPropulsion = 62    # depends on PropulsionSystems
+    NuclearPropulsion = 71      # depends on HeavierRocketry
     VeryHeavyRocketry = 81      # depends on HeavierRocketry or LargeVolumeContainment
     HyperSonicFlight = 82       # depends on Aerodynamics
     AerospaceTech = 91          # depends on HypersonicFlight
@@ -93,6 +94,11 @@ RocketFuelTanks = [
 
 SmallestTank = { RadialSize.Tiny : 0, RadialSize.Small: 1, RadialSize.Large: 5, RadialSize.ExtraLarge: 9 }
 BiggestTank =  { RadialSize.Tiny : 0, RadialSize.Small: 4, RadialSize.Large: 8, RadialSize.ExtraLarge: 11 }
+
+SpecialEngine = namedtuple('SpecialEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac', 'F_vac', 'tvc', 'level', 'f_e'])
+
+AtomicRocketMotor = SpecialEngine(RadialSize.Small, 'LV-N Nerv Atomic Rocket Motor', 10000, 3000, 185, 800, 60000, 0, ResearchNode.NuclearPropulsion, 5/18)
+AtomicTankFactor = 23/45    # Mass of full atomic fuel tank / Mass of full liquid fuel tank
 
 SolidFuelBooster = namedtuple('SolidFuelBooster', ['name', 'cost', 'm_full', 'm_empty', 'isp_atm', 'isp_vac', 'F_vac', 'level'])
 
