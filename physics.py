@@ -104,7 +104,7 @@ def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
     def mc_improve(mc_old):
         m_f = exp(-fsum([dv[k]/I_sps[k] for k in range(0,f)])/g_0)
         m_f = sm_s*m_f+(m_f-1)*(m_p+9/8*mc_old+m_x)
-        return lf_needed_fuel([dv[f]-s(I_sps[f],m_f,sm_t,mc_old)]+dv[f+1:n+1], I_spl[f:n+1], m_p)
+        return lf_needed_fuel([dv[f]-s(I_sps[f],m_f,sm_t,mc_old)]+dv[f+1:n+1], I_spl[f:n+1], m_p, 1/8)
     m_c = 2 * [None]
     current = 1
     m_c[0] = mc_improve(0)
