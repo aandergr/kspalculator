@@ -54,7 +54,7 @@ class Design:
             else:
                 self.cost = self.cost + smalltankcount * parts.RocketFuelTanks[i].cost
     def AddAtomicFuelTanks(self, af):
-        # lf is full tank mass
+        # af is full tank mass
         # Adomic Fuel is liquid fuel without oxidizer.
         f_f = parts.AtomicTankFactor
         f_e = self.mainengine.f_e
@@ -194,7 +194,7 @@ class Design:
             return True
         return False
 
-# TODO: simplify design creation even more
+# TODO: simplify design creation even more. Overthink class Design and whole design.py
 
 def CreateSingleLFEngineDesign(payload, pressure, dv, acc, eng):
     design = Design(payload, eng, 1, eng.size)

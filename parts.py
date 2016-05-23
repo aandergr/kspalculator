@@ -26,6 +26,7 @@ class ResearchNode(Enum):
     AerospaceTech = 91          # depends on HypersonicFlight
 
     def DependsOn(self, a):
+        # TODO: redo this, implementing engineering stuff and knowing about the tree
         if self is a:
             return True
         if  (self is ResearchNode.VeryHeavyRocketry) or \
@@ -74,28 +75,29 @@ LiquidFuelEngines = [
 # empty weight is 1/9 of full weight.
 # content is 0.9 parts liquid fuel and 1.1 parts oxidizer.
 
-RocketFuelTank = namedtuple('RocketFuelTank', ['size', 'cost', 'm_full'])
+FuelTank = namedtuple('FuelTank', ['size', 'cost', 'm_full'])
 
 # TODO: support adapter tanks
 
 RocketFuelTanks = [
-        RocketFuelTank(RadialSize.Tiny, 70, 225),               # 0
-        RocketFuelTank(RadialSize.Small, 150, 562.5),           # 1
-        RocketFuelTank(RadialSize.Small, 275, 1125),
-        RocketFuelTank(RadialSize.Small, 500, 2250),
-        RocketFuelTank(RadialSize.Small, 800, 4500),            # 4
-        RocketFuelTank(RadialSize.Large, 800, 4500),            # 5
-        RocketFuelTank(RadialSize.Large, 1550, 9000),
-        RocketFuelTank(RadialSize.Large, 3000, 18000),
-        RocketFuelTank(RadialSize.Large, 5750, 36000),          # 8
-        RocketFuelTank(RadialSize.ExtraLarge, 3250, 20250),     # 9
-        RocketFuelTank(RadialSize.ExtraLarge, 6500, 40500),
-        RocketFuelTank(RadialSize.ExtraLarge, 13000, 81000) ]   # 11
+        FuelTank(RadialSize.Tiny, 70, 225),               # 0
+        FuelTank(RadialSize.Small, 150, 562.5),           # 1
+        FuelTank(RadialSize.Small, 275, 1125),
+        FuelTank(RadialSize.Small, 500, 2250),
+        FuelTank(RadialSize.Small, 800, 4500),            # 4
+        FuelTank(RadialSize.Large, 800, 4500),            # 5
+        FuelTank(RadialSize.Large, 1550, 9000),
+        FuelTank(RadialSize.Large, 3000, 18000),
+        FuelTank(RadialSize.Large, 5750, 36000),          # 8
+        FuelTank(RadialSize.ExtraLarge, 3250, 20250),     # 9
+        FuelTank(RadialSize.ExtraLarge, 6500, 40500),
+        FuelTank(RadialSize.ExtraLarge, 13000, 81000) ]   # 11
 
 SmallestTank = { RadialSize.Tiny : 0, RadialSize.Small: 1, RadialSize.Large: 5, RadialSize.ExtraLarge: 9 }
 BiggestTank =  { RadialSize.Tiny : 0, RadialSize.Small: 4, RadialSize.Large: 8, RadialSize.ExtraLarge: 11 }
 
 SpecialEngine = namedtuple('SpecialEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac', 'F_vac', 'tvc', 'level', 'f_e'])
+# TODO: overthink this. f_e is a property of the tank, not of the engine.
 
 AtomicRocketMotor = SpecialEngine(RadialSize.Small, 'LV-N Nerv Atomic Rocket Motor', 10000, 3000, 185, 800, 60000, 0, ResearchNode.NuclearPropulsion, 5/18)
 AtomicTankFactor = 23/45    # Mass of full atomic fuel tank / Mass of full liquid fuel tank
