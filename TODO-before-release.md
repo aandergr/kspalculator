@@ -4,8 +4,6 @@ their priority.**
 * Consider that engines with low height as well as radially mounted engines
   might be advantageous (e.g. for landers)
 
-* Consider that engines generating electricity might be advantageous.
-
 * Review and test IsBest algorithm.
 
 * Verify parts.py correctness for current KSP version

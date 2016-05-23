@@ -158,8 +158,6 @@ class Design:
             print("\t%s: %.0f units (%.0f kg full tank mass)" % \
                     (self.specialfueltype, self.specialfuel/(self.mainengine.f_e+1)/self.specialfuelunitmass,
                         self.specialfuel))
-        print("\tGimbal: %.1f °" % self.mainengine.tvc)
-        print("\tRadial size: %s" % self.size.name)
         if self.sfb is None:
             req = self.mainengine.level.name
         else:
@@ -170,6 +168,10 @@ class Design:
             else:
                 req = "%s and %s" % (self.sfb.level.name, self.mainengine.level.name)
         print("\tRequires: %s" % req)
+        print("\tRadial size: %s" % self.size.name)
+        print("\tGimbal: %.1f °" % self.mainengine.tvc)
+        if self.mainengine.electricity == 1:
+            print("\tEngine generates electricity")
         for n in self.notes:
             print("\t%s" % n)
         print("\tPerformance:")
@@ -189,7 +191,7 @@ class Design:
                     a.sfb.level.MoreSophisticated(self.mainengine.level)) or \
                     (a.mainengine.level.MoreSophisticated(self.sfb.level) and \
                     a.sfb.level.MoreSophisticated(self.sfb.level))
-    def IsBetterThan(self, a, preferredsize, bestgimbal):
+    def IsBetterThan(self, a, preferredsize, bestgimbal, prefergenerators):
         """
         Returns True if self is better than a by any parameter, i.e. there might
         be a reason to use self instead of a.
@@ -208,10 +210,14 @@ class Design:
         if (self.specialfueltype is not None and self.specialfueltype == "MonoPropellant") and \
                 (a.specialfueltype is None or a.specialfueltype != "MonoPropellant"):
             return True
+        # if user cares about whether engine generates electricity
+        if prefergenerators and self.mainengine.electricity == 1 and a.mainengine.electricity == 0:
+            return True
         # this is where user's size preferrence comes in
         if preferredsize is not None:
             if self.size is preferredsize and a.size is not preferredsize:
                 return True
+        # to be earlier available in the game is an advantage
         if a.MoreSophisticated(self):
             return True
         return False
@@ -315,7 +321,7 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, size, count, sfb, 
 # TODO: add asparagous designs
 
 def FindDesigns(payload, pressure, dv, min_acceleration,
-        preferredsize = None, bestgimbal = False, sfballowed = False):
+        preferredsize = None, bestgimbal = False, sfballowed = False, prefergenerators = False):
     # pressure: 0 = vacuum, 1 = kerbin
     designs = []
     d = CreateAtomicRocketMotorDesign(payload, pressure, dv, min_acceleration)
@@ -370,7 +376,7 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
     for d in designs:
         d.IsBest = True
         for e in designs:
-            if (d is not e) and (not d.IsBetterThan(e, preferredsize, bestgimbal)):
+            if (d is not e) and (not d.IsBetterThan(e, preferredsize, bestgimbal, prefergenerators)):
                 d.IsBest = False
                 break
 

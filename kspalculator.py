@@ -28,7 +28,10 @@ parser.add_argument('-S', '--preferred-size', choices=['tiny', 'small', 'large',
 parser.add_argument('-g', '--best-gimbal', action='store_true',
         help='Not only compare whether engine has gimbal or not, but also the maximum '
         'trust vectoring angle')
-parser.add_argument('--keep', action='store_true', help='Do not hide bad solutions')
+parser.add_argument('-e', '--electricity', action='store_true',
+        help='Consider engines generating electricity advantageous. This means, designs using '
+        'electricity generating engines are presented even if they are worse by other criteria.')
+parser.add_argument('--keep', action='store_true', help='Show all solutions, not only the best ones')
 
 args = parser.parse_args()
 
@@ -57,7 +60,8 @@ for st in args.dvtuples:
     ac.append(0.0 if len(s) < 2 else float(s[1]))
     pr.append(0.0 if len(s) < 3 else float(s[2]))
 
-all_designs = FindDesigns(args.payload, pr, dv, ac, ps, args.best_gimbal, args.boosters)
+all_designs = FindDesigns(args.payload, pr, dv, ac, ps,
+        args.best_gimbal, args.boosters, args.electricity)
 
 if args.keep:
     D = all_designs
