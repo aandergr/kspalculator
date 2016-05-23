@@ -199,12 +199,12 @@ class Design:
         # obvious and easy to check criteria
         if (self.mass < a.mass) or (self.cost < a.cost):
             return True
-        # check if we have better gimbal
-        if bestgimbal:
-            if self.mainengine.tvc > a.mainengine.tvc:
-                return True
-        else:
+        # if user requires, check if we have better gimbal
+        if bestgimbal == 1:
             if self.mainengine.tvc > 0.0 and a.mainengine.tvc == 0.0:
+                return True
+        elif bestgimbal >= 2:
+            if self.mainengine.tvc > a.mainengine.tvc:
                 return True
         # using monopropellant engine is always an advantage
         if (self.specialfueltype is not None and self.specialfueltype == "MonoPropellant") and \
@@ -321,7 +321,7 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, size, count, sfb, 
 # TODO: add asparagous designs
 
 def FindDesigns(payload, pressure, dv, min_acceleration,
-        preferredsize = None, bestgimbal = False, sfballowed = False, prefergenerators = False):
+        preferredsize = None, bestgimbal = 0, sfballowed = False, prefergenerators = False):
     # pressure: 0 = vacuum, 1 = kerbin
     designs = []
     d = CreateAtomicRocketMotorDesign(payload, pressure, dv, min_acceleration)

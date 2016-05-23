@@ -13,7 +13,6 @@ their priority.**
  * Let kspalculator.py print all constraints for double-checking, unless
    --quiet option is given.
  * Rework --help.
- * --version, also showing KSP version of parts.py
  * Check validity of given options.
 
 * One more time: Test and review code.

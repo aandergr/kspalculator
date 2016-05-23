@@ -1,7 +1,9 @@
 from collections import namedtuple
 from enum import Enum
 
-# Source: http://wiki.kerbalspaceprogram.com/wiki/Parts
+# Source: http://wiki.kerbalspaceprogram.com/wiki/Parts, as well as in-game info
+
+kspversion = '1.1.5'
 
 class RadialSize(Enum):
     Tiny = 1
