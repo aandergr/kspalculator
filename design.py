@@ -86,6 +86,15 @@ class Design:
         self.specialfuelunitmass = parts.XenonUnitMass
         self.mass = self.mass + self.specialfuel
         self.cost = self.cost + tankcount*parts.XenonTank.cost
+    def AddMonoPropellantTanks(self, mp, tank):
+        # mp is full tank mass
+        f_e = self.mainengine.f_e
+        tankcount = ceil(mp / tank.m_full)
+        self.specialfuel = tankcount * tank.m_full
+        self.specialfueltype = "MonoPropellant"
+        self.specialfuelunitmass = parts.MonoPropellantUnitMass
+        self.mass = self.mass + self.specialfuel
+        self.cost = self.cost + tankcount*tank.cost
     def CalculatePerformance(self, dv, pressure):
         if self.sfb is None and self.liquidfuel is not None:
             # liquid fuel only
@@ -195,6 +204,10 @@ class Design:
         else:
             if self.mainengine.tvc > 0.0 and a.mainengine.tvc == 0.0:
                 return True
+        # using monopropellant engine is always an advantage
+        if (self.specialfueltype is not None and self.specialfueltype == "MonoPropellant") and \
+                (a.specialfueltype is None or a.specialfueltype != "MonoPropellant"):
+            return True
         # this is where user's size preferrence comes in
         if preferredsize is not None:
             if self.size is preferredsize and a.size is not preferredsize:
@@ -237,6 +250,19 @@ def CreateElectricPropulsionSystemDesign(payload, pressure, dv, acc):
     if xf is None:
         return None
     design.AddXenonTanks((1+f_e) * xf)
+    design.CalculatePerformance(dv, pressure)
+    if not design.EnoughAcceleration(acc):
+        return None
+    return design
+
+def CreateMonoPropellantEngineDesign(payload, pressure, dv, acc, engine, tank, count):
+    design = Design(payload, engine, count, tank.size)
+    f_e = engine.f_e
+    mp = physics.lf_needed_fuel(dv, physics.engine_isp(engine, pressure),
+            design.mass, f_e)
+    if mp is None:
+        return None
+    design.AddMonoPropellantTanks((1+f_e) * mp, tank)
     design.CalculatePerformance(dv, pressure)
     if not design.EnoughAcceleration(acc):
         return None
@@ -298,6 +324,13 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
     d = CreateElectricPropulsionSystemDesign(payload, pressure, dv, min_acceleration)
     if d is not None:
         designs.append(d)
+    for i in range(len(parts.MonoPropellantTanks)):
+        for count in [2, 3, 4, 6, 8]:
+            d = CreateMonoPropellantEngineDesign(payload, pressure, dv, min_acceleration,
+                    parts.MonoPropellantEngines[i], parts.MonoPropellantTanks[i], count)
+            if d is not None:
+                designs.append(d)
+                break  # do not try more engines as it wouldn't have any advantage
     for eng in parts.LiquidFuelEngines:
         if eng.size is parts.RadialSize.RdMntd:
             for size in [parts.RadialSize.Tiny, parts.RadialSize.Small,

@@ -111,6 +111,20 @@ ElectricPropulsionSystem = SpecialEngine(RadialSize.Tiny, 'IX-6315 Dawn Electric
 XenonTank = FuelTank(RadialSize.Tiny, 3000, 120)    # TODO: double check validity of this data.
 XenonUnitMass = 0.1
 
+# TODO: Currently, radially mounted RCS tanks are not supported, even if they
+# might be cool in some cases.
+# TODO: handling of f_e should be overthought as soon as possible.
+# TODO: AdvFuelSystems is also needed.
+MonoPropellantEngines = [
+        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine w/ FL-R10 Tanks', 150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 5/32),
+        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine w/ FL-R25 Tanks', 150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 3/20),
+        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine w/ FL-R1 Tanks', 150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 2/15) ]
+MonoPropellantTanks = [
+        FuelTank(RadialSize.Tiny,  200,  370),
+        FuelTank(RadialSize.Small, 600,  1150),
+        FuelTank(RadialSize.Large, 1300, 3400) ]
+MonoPropellantUnitMass = 4
+
 SolidFuelBooster = namedtuple('SolidFuelBooster', ['name', 'cost', 'm_full', 'm_empty', 'isp_atm', 'isp_vac', 'F_vac', 'level'])
 
 SolidFuelBoosters = [
