@@ -33,6 +33,8 @@ parser.add_argument('-R', '--preferred-radius', choices=['tiny', 'small', 'large
 parser.add_argument('-e', '--electricity', action='store_true',
         help='Consider engines generating electricity advantageous. This means, designs using '
         'electricity generating engines are presented even if they are worse by other criteria.')
+parser.add_argument('-l', '--length', '--lander', action='store_true',
+        help='Prefer short (or radially mounted) engines, as might be needed for building a lander')
 parser.add_argument('-g', '--gimbal', action='count',
         help='If specified once, prefer engines with gimbal (aka thrust vectoring) over engines '
         'without gimbal. If specified twice (i.e. -gg), also consider gimbal range and prefer '
@@ -70,7 +72,7 @@ if args.gimbal is None:
     args.gimbal = 0
 
 all_designs = FindDesigns(args.payload, pr, dv, ac, ps,
-        args.gimbal, args.boosters, args.electricity)
+        args.gimbal, args.boosters, args.electricity, args.length)
 
 if args.show_all_solutions:
     D = all_designs

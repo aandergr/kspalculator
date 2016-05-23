@@ -1,9 +1,6 @@
 **Things which should be done before releasing this software, in order of
 their priority.**
 
-* Consider that engines with low height as well as radially mounted engines
-  might be advantageous (e.g. for landers)
-
 * Review and test IsBest algorithm.
 
 * Verify parts.py correctness for current KSP version

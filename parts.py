@@ -52,26 +52,53 @@ class ResearchNode(Enum):
     def MoreSophisticated(self, a):
         return (self is not a and a.DependsOn(self))
 
-LiquidFuelEngine = namedtuple('LiquidFuelEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac', 'F_vac', 'tvc', 'level', 'electricity'])
+# A note about length of engine: We have this option, because for landers with landing legs, short
+# engines are an advantage. So which height an engine has, depends on the compatibility with landing
+# struts, ordered by their mass. We have this data from KSP wiki. Unfortunately, the listings there
+# are not comprehensive.
+#  0 -> ok with LT-05 µ landing strut (all radially mounted, Terrier, Spark, Ant)
+#  1 -> ok with LT-1 landing struts (Dart)
+#  2 -> ok with LT-2 landing struts (Poodle, Reliant, Swivel)
+#  3 -> all others...
+
+LiquidFuelEngine = namedtuple('LiquidFuelEngine', ['size', 'name', 'cost', 'm', 'isp_atm',
+    'isp_vac', 'F_vac', 'tvc', 'level', 'electricity', 'length'])
 
 LiquidFuelEngines = [
-        LiquidFuelEngine(RadialSize.RdMntd,'LV-1R Spider',   120,  20,   260, 290, 2000,   8, ResearchNode.PrecisionPropulsion, 0),
-        LiquidFuelEngine(RadialSize.RdMntd,'24-77 Twitch',   400,  90,   250, 290, 16000,  8, ResearchNode.PrecisionPropulsion, 0),
-        LiquidFuelEngine(RadialSize.RdMntd,'Mk-55 Thud',     820,  900,  275, 305, 120000, 8, ResearchNode.AdvancedRocketry, 0),
-        LiquidFuelEngine(RadialSize.Tiny,  'LV-1 Ant',       110,  20,   80,  315, 2000,   0, ResearchNode.PropulsionSystems, 0),
-        LiquidFuelEngine(RadialSize.Tiny,  '48-7S Spark',    200,  100,  270, 300, 18000,  3, ResearchNode.PropulsionSystems, 0),
-        LiquidFuelEngine(RadialSize.Small, 'LV-909 Terrier', 390,  500,  85,  345, 60000,  4, ResearchNode.AdvancedRocketry, 0),
-        LiquidFuelEngine(RadialSize.Small, 'LV-T30 Reliant', 1100, 1250, 280, 300, 215000, 0, ResearchNode.BasicRocketry, 1),
-        LiquidFuelEngine(RadialSize.Small, 'LV-T45 Swivel',  1200, 1500, 270, 320, 200000, 3, ResearchNode.GeneralRocketry, 1),
-        LiquidFuelEngine(RadialSize.Small, 'S3 KS-25 Vector',18000,4000, 295, 315, 1000000,10.5,ResearchNode.VeryHeavyRocketry, 1),
-        LiquidFuelEngine(RadialSize.Small, 'CR7 RAPIER',     6000, 2000, 275, 305, 180000, 3, ResearchNode.AerospaceTech, 0),
-        LiquidFuelEngine(RadialSize.Small, 'T-1 Dart',       3850, 1000, 290, 340, 180000, 0, ResearchNode.HyperSonicFlight, 1),
-        LiquidFuelEngine(RadialSize.Large, 'RE-L10 Poodle',  1300, 1750, 90,  350, 250000, 4.5,ResearchNode.HeavyRocketry, 1),
-        LiquidFuelEngine(RadialSize.Large, 'RE-I5 Skipper',  5300, 3000, 280, 320, 650000, 2, ResearchNode.HeavyRocketry, 1),
-        LiquidFuelEngine(RadialSize.Large, 'RE-M3 Mainsail', 13000,6000, 285, 320, 1500000,2, ResearchNode.HeavierRocketry, 1),
-        LiquidFuelEngine(RadialSize.Large, 'LFB Twin-Boar',  11250,6500, 280, 300, 2000000,1.5,ResearchNode.HeavierRocketry, 0),
-        LiquidFuelEngine(RadialSize.ExtraLarge, 'KR-2L+ Rhino', 25000,9000, 255, 340, 2000000,4,ResearchNode.VeryHeavyRocketry, 1),
-        LiquidFuelEngine(RadialSize.ExtraLarge, 'KS-25x4 Mammoth', 39000,15000, 295, 315, 4000000,2,ResearchNode.VeryHeavyRocketry, 1) ]
+        LiquidFuelEngine(RadialSize.RdMntd,'LV-1R Spider',   120,  20,   260, 290, 2000,   8,
+            ResearchNode.PrecisionPropulsion, 0, 0),
+        LiquidFuelEngine(RadialSize.RdMntd,'24-77 Twitch',   400,  90,   250, 290, 16000,  8,
+            ResearchNode.PrecisionPropulsion, 0, 0),
+        LiquidFuelEngine(RadialSize.RdMntd,'Mk-55 Thud',     820,  900,  275, 305, 120000, 8,
+            ResearchNode.AdvancedRocketry, 0, 0),
+        LiquidFuelEngine(RadialSize.Tiny,  'LV-1 Ant',       110,  20,   80,  315, 2000,   0,
+            ResearchNode.PropulsionSystems, 0, 0),
+        LiquidFuelEngine(RadialSize.Tiny,  '48-7S Spark',    200,  100,  270, 300, 18000,  3,
+            ResearchNode.PropulsionSystems, 0, 0),
+        LiquidFuelEngine(RadialSize.Small, 'LV-909 Terrier', 390,  500,  85,  345, 60000,  4,
+            ResearchNode.AdvancedRocketry, 0, 0),
+        LiquidFuelEngine(RadialSize.Small, 'LV-T30 Reliant', 1100, 1250, 280, 300, 215000, 0,
+            ResearchNode.BasicRocketry, 1, 2),
+        LiquidFuelEngine(RadialSize.Small, 'LV-T45 Swivel',  1200, 1500, 270, 320, 200000, 3,
+            ResearchNode.GeneralRocketry, 1, 2),
+        LiquidFuelEngine(RadialSize.Small, 'S3 KS-25 Vector',18000,4000, 295, 315, 1000000, 10.5,
+            ResearchNode.VeryHeavyRocketry, 1, 3),
+        LiquidFuelEngine(RadialSize.Small, 'CR7 RAPIER',     6000, 2000, 275, 305, 180000, 3,
+            ResearchNode.AerospaceTech, 0, 3),
+        LiquidFuelEngine(RadialSize.Small, 'T-1 Dart',       3850, 1000, 290, 340, 180000, 0,
+            ResearchNode.HyperSonicFlight, 1, 1),
+        LiquidFuelEngine(RadialSize.Large, 'RE-L10 Poodle',  1300, 1750, 90,  350, 250000,
+            4.5,ResearchNode.HeavyRocketry, 1, 2),
+        LiquidFuelEngine(RadialSize.Large, 'RE-I5 Skipper',  5300, 3000, 280, 320, 650000, 2,
+            ResearchNode.HeavyRocketry, 1, 3),
+        LiquidFuelEngine(RadialSize.Large, 'RE-M3 Mainsail', 13000,6000, 285, 320, 1500000,2,
+            ResearchNode.HeavierRocketry, 1, 3),
+        LiquidFuelEngine(RadialSize.Large, 'LFB Twin-Boar',  11250,6500, 280, 300, 2000000, 1.5,
+            ResearchNode.HeavierRocketry, 0, 3),
+        LiquidFuelEngine(RadialSize.ExtraLarge, 'KR-2L+ Rhino', 25000,9000, 255, 340, 2000000, 4,
+            ResearchNode.VeryHeavyRocketry, 1, 3),
+        LiquidFuelEngine(RadialSize.ExtraLarge, 'KS-25x4 Mammoth', 39000,15000, 295, 315, 4000000, 2,
+            ResearchNode.VeryHeavyRocketry, 1, 3) ]
 
 # Twin-Boar is the engine as listed above, with forced addition of the 36 ton large liquid fuel tank.
 
@@ -100,16 +127,19 @@ RocketFuelTanks = [
 SmallestTank = { RadialSize.Tiny : 0, RadialSize.Small: 1, RadialSize.Large: 5, RadialSize.ExtraLarge: 9 }
 BiggestTank =  { RadialSize.Tiny : 0, RadialSize.Small: 4, RadialSize.Large: 8, RadialSize.ExtraLarge: 11 }
 
-SpecialEngine = namedtuple('SpecialEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac', 'F_vac', 'tvc', 'level', 'f_e', 'electricity'])
+SpecialEngine = namedtuple('SpecialEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac',
+    'F_vac', 'tvc', 'level', 'f_e', 'electricity', 'length'])
 # TODO: overthink this. f_e is a property of the tank, not of the engine.
 
-AtomicRocketMotor = SpecialEngine(RadialSize.Small, 'LV-N Nerv Atomic Rocket Motor', 10000, 3000, 185, 800, 60000, 0, ResearchNode.NuclearPropulsion, 5/18, 1)
+AtomicRocketMotor = SpecialEngine(RadialSize.Small, 'LV-N Nerv Atomic Rocket Motor', 10000, 3000,
+        185, 800, 60000, 0, ResearchNode.NuclearPropulsion, 5/18, 1, 3)
 AtomicTankFactor = 23/45    # Mass of full atomic fuel tank / Mass of full liquid fuel tank
 
 # TODO. Currently we only support PB-X150 Xenon Container. We should think about
 # alternative designs using the ion engine. Especially considering radially
 # mounted tanks would be easy to implement
-ElectricPropulsionSystem = SpecialEngine(RadialSize.Tiny, 'IX-6315 Dawn Electric Propulsion System', 8000, 250, 100, 4200, 2000, 0, ResearchNode.IonPropulsion, 5/7, 0)
+ElectricPropulsionSystem = SpecialEngine(RadialSize.Tiny, 'IX-6315 Dawn Electric Propulsion System',
+        8000, 250, 100, 4200, 2000, 0, ResearchNode.IonPropulsion, 5/7, 0, 0)
 XenonTank = FuelTank(RadialSize.Tiny, 3000, 120)    # TODO: double check validity of this data.
 XenonUnitMass = 0.1
 
@@ -118,9 +148,12 @@ XenonUnitMass = 0.1
 # TODO: handling of f_e should be overthought as soon as possible.
 # TODO: AdvFuelSystems is also needed.
 MonoPropellantEngines = [
-        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine (w/ FL-R10 Tanks)', 150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 5/32, 0),
-        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine (w/ FL-R25 Tanks)', 150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 3/20, 0),
-        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine (w/ FL-R1 Tanks)', 150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 2/15, 0) ]
+        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine (w/ FL-R10 Tanks)',
+            150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 5/32, 0, 0),
+        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine (w/ FL-R25 Tanks)',
+            150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 3/20, 0, 0),
+        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine (w/ FL-R1 Tanks)',
+            150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 2/15, 0, 0) ]
 MonoPropellantTanks = [
         FuelTank(RadialSize.Tiny,  200,  370),
         FuelTank(RadialSize.Small, 600,  1150),

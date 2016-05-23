@@ -173,6 +173,14 @@ class Design:
             print("\tGimbal: %.1f °" % self.mainengine.tvc)
         if self.mainengine.electricity == 1:
             print("\tEngine generates electricity")
+        if self.mainengine.length == 0:
+            length = "LT-05 Micro Landing Struts"
+        elif self.mainengine.length == 1:
+            length = "LT-1 Landing Struts"
+        elif self.mainengine.length == 2:
+            length = "LT-2 Landing Struts"
+        if self.mainengine.length <= 2:
+            print("\tEngine is short enough to be used with %s" % length)
         for n in self.notes:
             print("\t%s" % n)
         print("\tPerformance:")
@@ -192,7 +200,7 @@ class Design:
                     a.sfb.level.MoreSophisticated(self.mainengine.level)) or \
                     (a.mainengine.level.MoreSophisticated(self.sfb.level) and \
                     a.sfb.level.MoreSophisticated(self.sfb.level))
-    def IsBetterThan(self, a, preferredsize, bestgimbal, prefergenerators):
+    def IsBetterThan(self, a, preferredsize, bestgimbal, prefergenerators, prefershortengines):
         """
         Returns True if self is better than a by any parameter, i.e. there might
         be a reason to use self instead of a.
@@ -213,6 +221,9 @@ class Design:
             return True
         # if user cares about whether engine generates electricity
         if prefergenerators and self.mainengine.electricity == 1 and a.mainengine.electricity == 0:
+            return True
+        # engine length
+        if prefershortengines and self.mainengine.length < a.mainengine.length:
             return True
         # this is where user's size preferrence comes in
         if preferredsize is not None:
@@ -322,7 +333,8 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, size, count, sfb, 
 # TODO: add asparagous designs
 
 def FindDesigns(payload, pressure, dv, min_acceleration,
-        preferredsize = None, bestgimbal = 0, sfballowed = False, prefergenerators = False):
+        preferredsize = None, bestgimbal = 0, sfballowed = False, prefergenerators = False,
+        prefershortengines = False):
     # pressure: 0 = vacuum, 1 = kerbin
     designs = []
     d = CreateAtomicRocketMotorDesign(payload, pressure, dv, min_acceleration)
@@ -377,7 +389,8 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
     for d in designs:
         d.IsBest = True
         for e in designs:
-            if (d is not e) and (not d.IsBetterThan(e, preferredsize, bestgimbal, prefergenerators)):
+            if (d is not e) and (not d.IsBetterThan(e, preferredsize, bestgimbal, prefergenerators,
+                                                    prefershortengines)):
                 d.IsBest = False
                 break
 
