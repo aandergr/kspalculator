@@ -34,7 +34,6 @@ class ResearchNode(Enum):
             return True
         if  (self is ResearchNode.VeryHeavyRocketry) or \
             (self is ResearchNode.HyperSonicFlight) or \
-            (self is ResearchNode.AerospaceTech) or \
             (self is ResearchNode.IonPropulsion):
             # interestingly, these nodes can be reached without having
             # researched the other *Rocketry technologies.
@@ -44,6 +43,11 @@ class ResearchNode(Enum):
                 return False
         if self is ResearchNode.PrecisionPropulsion:
             if a is ResearchNode.PropulsionSystems or a.value <= 41:
+                return True
+            else:
+                return False
+        if (self is ResearchNode.AerospaceTech):
+            if (a is ResearchNode.HyperSonicFlight) or (a is ResearchNode.Start):
                 return True
             else:
                 return False
@@ -78,9 +82,9 @@ LiquidFuelEngines = [
         LiquidFuelEngine(RadialSize.Small, 'LV-909 Terrier', 390,  500,  85,  345, 60000,  4,
             ResearchNode.AdvancedRocketry, 0, 0),
         LiquidFuelEngine(RadialSize.Small, 'LV-T30 Reliant', 1100, 1250, 280, 300, 215000, 0,
-            ResearchNode.BasicRocketry, 1, 2),
-        LiquidFuelEngine(RadialSize.Small, 'LV-T45 Swivel',  1200, 1500, 270, 320, 200000, 3,
             ResearchNode.GeneralRocketry, 1, 2),
+        LiquidFuelEngine(RadialSize.Small, 'LV-T45 Swivel',  1200, 1500, 270, 320, 200000, 3,
+            ResearchNode.BasicRocketry, 1, 2),
         LiquidFuelEngine(RadialSize.Small, 'S3 KS-25 Vector',18000,4000, 295, 315, 1000000, 10.5,
             ResearchNode.VeryHeavyRocketry, 1, 3),
         LiquidFuelEngine(RadialSize.Small, 'CR7 RAPIER',     6000, 2000, 275, 305, 180000, 3,
@@ -91,7 +95,7 @@ LiquidFuelEngines = [
             4.5,ResearchNode.HeavyRocketry, 1, 2),
         LiquidFuelEngine(RadialSize.Large, 'RE-I5 Skipper',  5300, 3000, 280, 320, 650000, 2,
             ResearchNode.HeavyRocketry, 1, 3),
-        LiquidFuelEngine(RadialSize.Large, 'RE-M3 Mainsail', 13000,6000, 285, 320, 1500000,2,
+        LiquidFuelEngine(RadialSize.Large, 'RE-M3 Mainsail', 13000,6000, 285, 310, 1500000,2,
             ResearchNode.HeavierRocketry, 1, 3),
         LiquidFuelEngine(RadialSize.Large, 'LFB Twin-Boar',  11250,6500, 280, 300, 2000000, 1.5,
             ResearchNode.HeavierRocketry, 0, 3),
@@ -139,8 +143,8 @@ AtomicTankFactor = 23/45    # Mass of full atomic fuel tank / Mass of full liqui
 # alternative designs using the ion engine. Especially considering radially
 # mounted tanks would be easy to implement
 ElectricPropulsionSystem = SpecialEngine(RadialSize.Tiny, 'IX-6315 Dawn Electric Propulsion System',
-        8000, 250, 100, 4200, 2000, 0, ResearchNode.IonPropulsion, 5/7, 0, 0)
-XenonTank = FuelTank(RadialSize.Tiny, 3000, 120)    # TODO: double check validity of this data.
+        8000, 250, 100, 4200, 2000, 0, ResearchNode.IonPropulsion, 11/14, 0, 0)
+XenonTank = FuelTank(RadialSize.Tiny, 3600, 125)
 XenonUnitMass = 0.1
 
 # TODO: Currently, radially mounted RCS tanks are not supported, even if they

@@ -3,8 +3,6 @@ their priority.**
 
 * Review and test IsBest algorithm.
 
-* Verify parts.py correctness for current KSP version
-
 * Documentation and User Interface.
  * Write good README.md with examples.
  * Let kspalculator.py print all constraints for double-checking, unless
