@@ -23,6 +23,7 @@ class ResearchNode(Enum):
     NuclearPropulsion = 71      # depends on HeavierRocketry
     VeryHeavyRocketry = 81      # depends on HeavierRocketry or LargeVolumeContainment
     HyperSonicFlight = 82       # depends on Aerodynamics
+    IonPropulsion = 83          # depends on ScienceTech and UnmannedTech
     AerospaceTech = 91          # depends on HypersonicFlight
 
     def DependsOn(self, a):
@@ -31,7 +32,8 @@ class ResearchNode(Enum):
             return True
         if  (self is ResearchNode.VeryHeavyRocketry) or \
             (self is ResearchNode.HyperSonicFlight) or \
-            (self is ResearchNode.AerospaceTech):
+            (self is ResearchNode.AerospaceTech) or \
+            (self is ResearchNode.IonPropulsion):
             # interestingly, these nodes can be reached without having
             # researched the other *Rocketry technologies.
             if a is ResearchNode.Start:
@@ -101,6 +103,13 @@ SpecialEngine = namedtuple('SpecialEngine', ['size', 'name', 'cost', 'm', 'isp_a
 
 AtomicRocketMotor = SpecialEngine(RadialSize.Small, 'LV-N Nerv Atomic Rocket Motor', 10000, 3000, 185, 800, 60000, 0, ResearchNode.NuclearPropulsion, 5/18)
 AtomicTankFactor = 23/45    # Mass of full atomic fuel tank / Mass of full liquid fuel tank
+
+# TODO. Currently we only support PB-X150 Xenon Container. We should think about
+# alternative designs using the ion engine. Especially considering radially
+# mounted tanks would be easy to implement
+ElectricPropulsionSystem = SpecialEngine(RadialSize.Tiny, 'IX-6315 Dawn Electric Propulsion System', 8000, 250, 100, 4200, 2000, 0, ResearchNode.IonPropulsion, 5/7)
+XenonTank = FuelTank(RadialSize.Tiny, 3000, 120)    # TODO: double check validity of this data.
+XenonUnitMass = 0.1
 
 SolidFuelBooster = namedtuple('SolidFuelBooster', ['name', 'cost', 'm_full', 'm_empty', 'isp_atm', 'isp_vac', 'F_vac', 'level'])
 

@@ -2,7 +2,6 @@
 their priority.**
 
 * Consider remaining types of engines, i.e.
- * Ion propulsion,
  * Monopropellant engines.
 
 * Consider that engines with low height as well as radially mounted engines

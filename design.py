@@ -77,6 +77,15 @@ class Design:
                 self.cost = self.cost + smalltankcount * parts.RocketFuelTanks[i].cost
         # black magic to quit cost of saved oxidizer
         self.cost = self.cost - self.specialfuel/(1+f_e)*1.1/0.9*0.04
+    def AddXenonTanks(self, xf):
+        # xf is full tank mass
+        f_e = self.mainengine.f_e
+        tankcount = ceil(xf / parts.XenonTank.m_full)
+        self.specialfuel = tankcount * parts.XenonTank.m_full
+        self.specialfueltype = "Xenon"
+        self.specialfuelunitmass = parts.XenonUnitMass
+        self.mass = self.mass + self.specialfuel
+        self.cost = self.cost + tankcount*parts.XenonTank.cost
     def CalculatePerformance(self, dv, pressure):
         if self.sfb is None and self.liquidfuel is not None:
             # liquid fuel only
@@ -220,6 +229,19 @@ def CreateAtomicRocketMotorDesign(payload, pressure, dv, acc):
         return None
     return design
 
+def CreateElectricPropulsionSystemDesign(payload, pressure, dv, acc):
+    design = Design(payload, parts.ElectricPropulsionSystem, 1, parts.RadialSize.Tiny)
+    f_e = parts.ElectricPropulsionSystem.f_e
+    xf = physics.lf_needed_fuel(dv, physics.engine_isp(parts.ElectricPropulsionSystem, pressure),
+            design.mass, f_e)
+    if xf is None:
+        return None
+    design.AddXenonTanks((1+f_e) * xf)
+    design.CalculatePerformance(dv, pressure)
+    if not design.EnoughAcceleration(acc):
+        return None
+    return design
+
 def CreateSingleLFESFBDesign(payload, pressure, dv, acc, eng, sfb, sfbcount):
     design = Design(payload, eng, 1, eng.size)
     design.AddSFB(sfb, sfbcount)
@@ -271,6 +293,9 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
     # pressure: 0 = vacuum, 1 = kerbin
     designs = []
     d = CreateAtomicRocketMotorDesign(payload, pressure, dv, min_acceleration)
+    if d is not None:
+        designs.append(d)
+    d = CreateElectricPropulsionSystemDesign(payload, pressure, dv, min_acceleration)
     if d is not None:
         designs.append(d)
     for eng in parts.LiquidFuelEngines:
