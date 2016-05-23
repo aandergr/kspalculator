@@ -1,28 +1,49 @@
 #!/usr/bin/env python3
 
-from argparse import ArgumentParser, SUPPRESS
+from argparse import ArgumentParser, ArgumentTypeError, SUPPRESS
+from textwrap import fill
+
 from parts import kspversion
 
 version = '0.9-rc'
 
-epilog = """
-deltav:pressure tuples:
-You specify which delta-v (in m/s) at which pressure (0.0 = vacuum, 1.0 = ATM)
-your ship must be able to reach. You might specify more than one of these
-tuples. This might be useful if you're going to fly through different
-environments, e.g. starting in atmosphere and later flying through vacuum.
-A safe kerbin launch is "905:13:1.0 3650:13:0.18".
-"""
+def nonnegative_float(string):
+    fl = float(string)
+    if fl < 0.0:
+        raise ArgumentTypeError("%r is negative" % string)
+    return fl
+
+def positive_float(string):
+    fl = float(string)
+    if fl <= 0.0:
+        raise ArgumentTypeError("%r is not positive" % string)
+    return fl
+
+def dvtuple(string):
+    s = string.split(':')
+    positive_float(s[0])
+    if len(s) > 1:
+        nonnegative_float(s[1])
+    if len(s) > 2:
+        nonnegative_float(s[2])
+    if len(s) > 3:
+        raise ArgumentTypeError("%r contains too many ':'" % string)
+    return string
+
+epilog = "For a more detailed explanation on how to use this tool, please consider reading " \
+        "README.md file.  If you encounter any issues, do not hesitate to report them at "\
+        "https://github.com/aandergr/kspalculator/issues."
 
 parser = ArgumentParser(description='Determine best rocket design for given constraints',
         epilog=epilog)
-parser.add_argument('payload', type=float, help='Payload in kg')
-parser.add_argument('dvtuples', metavar='deltav[:min_acceleration[:pressure]]', nargs='+',
-        help='Tuples of required delta v, minimum acceleration and environment pressure at each '
-        'flight phase. Defaults for minimum acceleration is 0 m/s² and for '
-        'pressure 0 ATM (= vacuum)')
+parser.add_argument('payload', type=nonnegative_float, help='Payload in kg')
+parser.add_argument('dvtuples', type=dvtuple, metavar='deltav[:min_acceleration[:pressure]]', nargs='+',
+        help='Tuples of required delta v (in m/s), minimum acceleration (in m/s²) and environment '
+        'pressure (0.0 = vacuum, 1.0 = ATM) at each flight phase. Default for minimum acceleration '
+        'is 0 m/s², default for pressure is vacuum.')
 parser.add_argument('-V', '--version', action='version',
         version=('kspalculator version %s, for KSP version %s.' % (version, kspversion)))
+parser.add_argument('-q', '--quiet', action='store_true', help='Do not print prologue')
 parser.add_argument('-c', '--cheapest', action='store_true',
         help='Sort by cost instead of weight')
 parser.add_argument('-b', '--boosters', action='store_true',
@@ -35,7 +56,7 @@ parser.add_argument('-e', '--electricity', action='store_true',
         'electricity generating engines are presented even if they are worse by other criteria.')
 parser.add_argument('-l', '--length', '--lander', action='store_true',
         help='Prefer short (or radially mounted) engines, as might be needed for building a lander')
-parser.add_argument('-g', '--gimbal', action='count',
+parser.add_argument('-g', '--gimbal', action='count', default=0,
         help='If specified once, prefer engines with gimbal (aka thrust vectoring) over engines '
         'without gimbal. If specified twice (i.e. -gg), also consider gimbal range and prefer '
         'engines with better thrust vectoring angle.')
@@ -68,9 +89,6 @@ for st in args.dvtuples:
     ac.append(0.0 if len(s) < 2 else float(s[1]))
     pr.append(0.0 if len(s) < 3 else float(s[2]))
 
-if args.gimbal is None:
-    args.gimbal = 0
-
 all_designs = FindDesigns(args.payload, pr, dv, ac, ps,
         args.gimbal, args.boosters, args.electricity, args.length)
 
@@ -84,6 +102,35 @@ if args.cheapest:
 else:
     D = sorted(D, key=lambda dsg: dsg.mass)
 
+if not args.quiet:
+    print(fill("Printing the best (and only the best!) designs (i.e. engine and tank combinations) "
+        "fulfilling these requirements:"))
+    print("- Payload: %.0f kg." % args.payload)
+    print("- Flight phases: ", end='')
+    for i in range(len(dv)):
+        print("%.0f m/s, %.1f m/s², %.2f atm%s" %
+                (dv[i], ac[i], pr[i], "; " if i != len(dv)-1 else "."), end='')
+    print() # newline
+    print("- Preferred size: %s." % args.preferred_radius)
+    if args.gimbal == 0:
+        print("- You do not need engine with thrust vectoring.")
+    elif args.gimbal == 1:
+        print("- You prefer engines with thrust vectoring.")
+    else:
+        print("- You prefer engines with the best thrust vectoring.")
+    if not args.boosters:
+        print("- Solid fuel boosters must not be added to the ship.")
+    if not args.electricity:
+        print("- You do not need engine generating electric power.")
+    if not args.length:
+        print("- You do not care about length of engine.")
+    print(fill("Note that these options heavily influence which engine choices are shown to you. "
+        "If these aren't your constraints, consult kspalculator.py --help and try again."))
+    print()
+
 for d in D:
     d.PrintInfo()
     print("")
+
+if not args.quiet and len(D) == 0:
+    print("Sorry, nothing found. Change constraints and try again.")
