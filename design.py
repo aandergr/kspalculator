@@ -169,7 +169,8 @@ class Design:
                 req = "%s and %s" % (self.sfb.level.name, self.mainengine.level.name)
         print("\tRequires: %s" % req)
         print("\tRadial size: %s" % self.size.name)
-        print("\tGimbal: %.1f °" % self.mainengine.tvc)
+        if self.mainengine.tvc != 0.0:
+            print("\tGimbal: %.1f °" % self.mainengine.tvc)
         if self.mainengine.electricity == 1:
             print("\tEngine generates electricity")
         for n in self.notes:

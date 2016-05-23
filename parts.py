@@ -3,7 +3,7 @@ from enum import Enum
 
 # Source: http://wiki.kerbalspaceprogram.com/wiki/Parts, as well as in-game info
 
-kspversion = '1.1.5'
+kspversion = '1.1.2'
 
 class RadialSize(Enum):
     Tiny = 1

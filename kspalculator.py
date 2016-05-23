@@ -27,8 +27,9 @@ parser.add_argument('-c', '--cheapest', action='store_true',
         help='Sort by cost instead of weight')
 parser.add_argument('-b', '--boosters', action='store_true',
         help='Consider designs with solid fuel boosters')
-parser.add_argument('-S', '--preferred-size', choices=['tiny', 'small', 'large', 'extralarge'],
-        help='Preferred width of the stage')
+parser.add_argument('-R', '--preferred-radius', choices=['tiny', 'small', 'large', 'extralarge'],
+        type = str.lower, help='Preferred radius of the stage. Tiny = 0.625 m, Small = 1.25 m, '
+        'Large = 2.5 m (Rockomax), ExtraLarge = 3.75 m (Kerbodyne).')
 parser.add_argument('-e', '--electricity', action='store_true',
         help='Consider engines generating electricity advantageous. This means, designs using '
         'electricity generating engines are presented even if they are worse by other criteria.')
@@ -46,12 +47,12 @@ from design import FindDesigns
 from parts import RadialSize
 
 ps = None
-if args.preferred_size is not None:
-    if args.preferred_size == "tiny":
+if args.preferred_radius is not None:
+    if args.preferred_radius == "tiny":
         ps = RadialSize.Tiny
-    elif args.preferred_size == "small":
+    elif args.preferred_radius == "small":
         ps = RadialSize.Small
-    elif args.preferred_size == "large":
+    elif args.preferred_radius == "large":
         ps = RadialSize.Large
     else:
         ps = RadialSize.ExtraLarge
