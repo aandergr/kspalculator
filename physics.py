@@ -66,7 +66,7 @@ def lf_performance(dv, I_sp, F, p, m_p, m_c, f_e):
         r_m_s[i] = g_m_t(r_m_s[i-1], dv[i-1], I_sp[i-1])
     r_m_t = r_m_s[1:] + [m_p + f_e*m_c]
     r_dv = dv + [g_dv(r_m_s[n], r_m_t[n], I_sp[n-1])]
-    r_p = p + [0]
+    r_p = p + [p[n-1]]
     r_solid = (n+1)*[False]
     r_a_s = [F[i if i != n else i-1] / r_m_s[i] for i in range(n+1)]
     r_a_t = [F[i if i != n else i-1] / r_m_t[i] for i in range(n+1)]
