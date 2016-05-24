@@ -231,3 +231,7 @@ thrust limit suggestion is the minimum thrust required to fulfil your accelerati
 Now build one of the launchers being suggested by kspalculator and we're ready to do a giant leap for kerbinkind.
 
 ## Helpful Links
+
+Nice cheat sheet, especially containing maps with required Delta-v: http://wiki.kerbalspaceprogram.com/wiki/Cheat_sheet
+
+In case you find any problems or have suggestions, please help us improving this tool by reporting them at: https://github.com/aandergr/kspalculator/issues
