@@ -47,7 +47,7 @@ within **less than a second**. The information shown about each design includes 
 required, because of rounding to tank sizes), the **acceleration at full thrust** as well as the **mass** at
 beginning and end of each *flight phase*.
 
-(By the way, we are talking about Kerbal Space Program, Version 1.1.2)
+(By the way, we are talking about Kerbal Space Program, version 1.1.2)
 
 ## Usage
 
@@ -56,7 +56,7 @@ beginning and end of each *flight phase*.
 First, fetch the most recent version of kspalculator at https://github.com/aandergr/kspalculator/releases.
 Installation is then done by simply unzipping the archive. Make sure you have [Python](https://www.python.org/),
 at least version 3.4 installed. You might run `./kspalculator.py -V` in kspalculator's folder to ensure
-installation suceeded.
+installation succeeded.
 
 ### Basic Usage
 
@@ -65,8 +65,6 @@ installation suceeded.
 ### Advanced Options
 
 ### Example Session
-
-#### Mission to Mun
 
 Imagine we build a light Mun lander, having a payload of 1320 kg. That is a Mk1 Command Pod, four LT-05 Landing
 Struts, a Parachute, a Heat Shield, a Stack Decoupler and Solar Panels. We want to have two stages: the upper one
@@ -80,9 +78,9 @@ In this case air pressure is easy: As the Mun does not have any atmosphere and t
 being in orbit, it is clear that the lander will be designed to fly through vacuum only.
 
 Needed Delta-v can be easily read at Delta-v maps or calculated by calculation tools found in the internet (see
-links section later in this document). We find out, that we need 1170 m/s from LKO to Low Mun Orbit, then 580 m/s
-for landing at Mun, 580 m/s for starting at Mun and later 310 m/s for returning to Kerbin. Additionally, in this
-example we want to have 700 m/s Delta-v as a reserve.
+links section later in this document). We find out, that we need 1170 m/s from Low Kerbin Orbit to Low Mun Orbit,
+then 580 m/s for landing at Mun, 580 m/s for starting at Mun and later 310 m/s for returning to Kerbin.
+Additionally, in this example we want to have 700 m/s Delta-v as a reserve.
 
 Now let's think about acceleration. As we land and start on Mun, we indeed have constraints regarding minimum
 acceleration, because we need to counteract Mun's gravity. In this example, we want to have at least 2*g* = 3.3
@@ -93,7 +91,8 @@ knowledge base.
 Do we have any preferences? Yes we do. We're building a lander utilizing LT-05 Micro Landing Struts, which are
 quite bad, so it would be nice to prefer engines which have a short length. Thus, we add `--length` flag to
 kspalculator invocation. Additionally, our Payload has radial size *small*, so it would be cool if the propulsion
-system also had this radius. We add `-R small`.
+system also had this radius. We add `-R small`. Note that adding preferences does *not* prevent the listing of
+solutions which do not meet these preferences, i.e. adding preferences always leads to more output.
 
 Doing so, we get:
 ```
@@ -152,8 +151,8 @@ Now build the stage adding the 800 Unit Fuel Tank and the Terrier engine under y
 decoupler (which weights 50 kg) as we're building the launcher stage.
 
 The payload for the launcher stage is 6370 kg (i.e. the lander stage plus 50 kg stack decoupler). Safe Delta-v and
-acceleration requirements for a launch to LKO have been found out to be 905 m/s with 13 m/s² at 1 ATM and then
-3650 m/s with 13 m/s² at 0.18 ATM.
+acceleration requirements for a launch to Low Kerbin Orbit have been found out to be 905 m/s with 13 m/s² at 1 ATM
+and then 3650 m/s with 13 m/s² at 0.18 ATM.
 
 We want to use solid fuel boosters for the launch, so we add `--boosters`. Additionaly, we prefer engines with
 thrust vectoring as it may be helpful to counteract turbulences during launch, so we add `--gimbal`. *Small* is
