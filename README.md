@@ -35,7 +35,7 @@ Considered criterias to decide whether a design is better than another one are
  * Mass,
  * Cost,
  * Whether it is buildable with easier available technology,
- * Whether gimbal is available, or Thrust Vectoring Range,
+ * Whether gimbal (thrust vectoring) is available, or Thrust Vectoring Range,
  * Whether it uses MonoPropellant as fuel, which is also used by Reaction Control System (RCS) thrusters,
  * Whether its engine generates electric power,
  * The length of the engine, as might be meaningful when building landers,
@@ -55,14 +55,42 @@ beginning and end of each *flight phase*.
 
 First, fetch the most recent version of kspalculator at https://github.com/aandergr/kspalculator/releases.
 Installation is then done by simply unzipping the archive. Make sure you have [Python](https://www.python.org/),
-at least version 3.4 installed. You might run `./kspalculator.py -V` in kspalculator's folder to ensure
+at least version 3.4 installed. You could run `./kspalculator.py --version` in kspalculator's folder to ensure
 installation succeeded.
 
 ### Basic Usage
 
+kspalculator is invoked on the command line. Syntax is
+```
+kspalculator.py [--boosters] [--cost] [preferences] <payload> <Delta-v[:acceleration[:pressure]]> [Delta-v[:acceleration[:pressure]] ...]
+```
 
+where `payload` is the payload in kg, and `Delta-v[:acceleration[:pressure]]` are tuples of required Delta-v in 
+m/s, acceleration in m/s² and environment pressure in ATM for each flight phase. Acceleration and pressure are 
+optional and default to zero. You have to specify at least one of these tuples.
 
-### Advanced Options
+If you add `--bosters`, kspalculator will consider adding solid fuel boosters. This is very useful for launcher 
+stages.
+
+Options for preferences are:
+ * `--preferred-radius {tiny,small,large,extralarge}`: Preferred radius of the stage. Tiny = 0.625 m,
+Small = 1.25 m, Large = 2.5 m (Rockomax), ExtraLarge = 3.75 m (Kerbodyne),
+ * `--electricity`: Prefer engines generating electricity,
+ * `--length` or `--lander`: Prefer engines which are short or radially mounted,
+ * `--gimbal`: Prefer engines having gimbal. If you specify this option twice, a higher gimbal range is considered 
+   better.
+
+In contrast to the constraints, preferences aren't hard requirements for a design suggestion to be shown up.  
+Adding preferences only adds criterias under which designs may be considered better than others. This means, 
+speciying more preferences, *more* designs will be suggested.
+
+If you specify `--cost`, results will be sorted by their coss instead of their mass.
+
+For a brief reference for options, call `kspalculator.py --help`. To display the version of the tool as well as 
+the corresponding version of Kerbal Space Program, call `kspalculator.py --version`.
+
+Note that kspalculator calculates optimal design for one stage only (or two if you allow boosters, where the first 
+is a stage only utilizing solid fuel boosters). It will never split your design up into multiple stages.
 
 ### Example Session
 
@@ -142,10 +170,10 @@ LV-T30 Reliant
 (Output was shortened)
 
 Of the suggested designs, all are the best by some criteria. The first one, using Spark engine, is the one having
-the lowest total mass, but in this example we do not want to use it because we did not research "Propulsion
-Systems" yet. We choose the Terrier design as we think it serves best our needs. Note that the tool also suggests
-the Reliant because of lower technology requirements, as well as some other nice designs which we skipped in this
-document to save space.
+the lowest total mass, but in this example we do not want to use it, for example  because we did not research 
+"Propulsion Systems" yet. We choose the Terrier design as we think it serves best our needs. Note that the tool 
+also suggests the Reliant because of lower technology requirements, as well as some other nice designs which we 
+skipped in this document to save space.
 
 Now build the stage adding the 800 Unit Fuel Tank and the Terrier engine under your payload. Then add a stack
 decoupler (which weights 50 kg) as we're building the launcher stage.
