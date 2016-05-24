@@ -64,20 +64,20 @@ installation suceeded.
 
 ### Advanced Options
 
-### Example Sessions
+### Example Session
 
 #### Mission to Mun
 
 Imagine we build a light Mun lander, having a payload of 1320 kg. That is a Mk1 Command Pod, four LT-05 Landing
 Struts, a Parachute, a Heat Shield, a Stack Decoupler and Solar Panels. We want to have two stages: the upper one
-flying from Low Kerbin Orbit to Mun, landing there, and the flying back to Kerbin; and the lower one launching the
-lander stage from Kerbin Space Center to Low Kerbin Orbit.
+flying from Low Kerbin Orbit to Mun, landing there, and then flying back to Kerbin; and the lower one launching
+the lander stage from Kerbin Space Center to Low Kerbin Orbit.
 
 After having determined the payload of the stage, we need to figure out Delta-v requirements, acceleration
 requirements and air pressure at the different flight phases.
 
-In this case air pressure is easy: As the Mun does not have any atmosphere, and the stage starts its way already
-being in orbit, it is clear that the lander will be designed to only fly through vacuum.
+In this case air pressure is easy: As the Mun does not have any atmosphere and the stage starts its way already
+being in orbit, it is clear that the lander will be designed to fly through vacuum only.
 
 Needed Delta-v can be easily read at Delta-v maps or calculated by calculation tools found in the internet (see
 links section later in this document). We find out, that we need 1170 m/s from LKO to Low Mun Orbit, then 580 m/s
@@ -197,7 +197,7 @@ RE-I5 Skipper
 ```
 (Output was shortened)
 
-The asterics in the performance tables indicate that the phase of flight is done by solid fuel boosters. The SFB
+The asterisks in the performance tables indicate that the phase of flight is done by solid fuel boosters. The SFB
 thrust limit suggestion is the minimum thrust required to fulfil your acceleration constraints.
 
 Now build one of the launchers being suggested by kspalculator and we're ready to do a giant leap for kerbinkind.
