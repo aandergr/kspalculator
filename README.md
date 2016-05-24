@@ -31,7 +31,7 @@ Besides considering the **classic liquid fuel engines** as well as **solid fuel 
 considers using the **LV-N Nerv Atomic Rocket Motor**, the **IX-6315 Dawn Electric Propulsion** and the
 **O-10 Puff MonoPropellant Engine**.
 
-Considered criterias to decide whether a design is better than another one are
+Considered criteria to decide whether a design is better than another one are
  * Mass,
  * Cost,
  * Whether it is buildable with easier available technology,
@@ -82,7 +82,7 @@ Small = 1.25 m, Large = 2.5 m (Rockomax), ExtraLarge = 3.75 m (Kerbodyne),
    better.
 
 In contrast to the constraints, preferences aren't hard requirements for a design suggestion to be shown up.  
-Adding preferences only adds criterias under which designs may be considered better than others. This means, 
+Adding preferences only adds criteria under which designs may be considered better than others. This means, 
 specifying more preferences, *more* designs will be suggested.
 
 If you specify `--cost`, results will be sorted by their cost instead of their mass.
@@ -183,7 +183,7 @@ The payload for the launcher stage is 6370 kg (i.e. the lander stage plus 50 kg 
 acceleration requirements for a launch to Low Kerbin Orbit have been found out to be 905 m/s with 13 m/s² at 1 ATM
 and then 3650 m/s with 13 m/s² at 0.18 ATM.
 
-We want to use solid fuel boosters for the launch, so we add `--boosters`. Additionaly, we prefer engines with
+We want to use solid fuel boosters for the launch, so we add `--boosters`. Additionally, we prefer engines with
 thrust vectoring as it may be helpful to counteract turbulences during launch, so we add `--gimbal`. *Small* is
 still our preferred radial size. Now we determine best launcher designs:
 ```
