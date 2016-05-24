@@ -20,7 +20,8 @@ criteria. This tool presents exactly *all* best designs.
 kspalculator evaluates all possible designs, checks whether they fulfil the user's requirements, and then checks
 whether it is the best design using the relation "*A* is better than *B* iff *A* is better than *B* by *any* of
 the user's criteria". Only the **best designs** are then presented to the user. This way, the user has maximum
-flexibility to use the type of propulsion which serves best his needs.
+flexibility to use the type of propulsion which serves best his needs, still without being spammed by non-optimal
+solutions.
 
 The stage might have different requirements for minimum acceleration for **different _flight phases_** through
 different air pressures and different Delta-v requirements. For example you might require the vessel accelerating
@@ -40,10 +41,165 @@ Considered criterias to decide whether a design is better than another one are
  * The length of the engine, as might be meaningful when building landers,
  * Whether it meets user's radial size preference.
 
-Even though calculating this sounds highly sophisticated, the best designs are presented to the user usually within
-**less than a second**. The information shown about each design include a detailed listing of the **performance
-characteristics**, i.e. the **actually reachable Delta-v** (which might be slightly more than required, because of
-rounding to tank sizes), the **acceleration at full thrust** as well as the **mass** at beginning and end of each
-*flight phase*.
+Even though calculating this sounds highly sophisticated, the best designs are presented to the user usually
+within **less than a second**. The information shown about each design includes a detailed listing of the
+**performance characteristics**, i.e. the **actually reachable Delta-v** (which might be slightly more than
+required, because of rounding to tank sizes), the **acceleration at full thrust** as well as the **mass** at
+beginning and end of each *flight phase*.
 
 (By the way, we are talking about Kerbal Space Program, Version 1.1.2)
+
+## Usage
+
+### Installation
+
+First, fetch the most recent version of kspalculator at https://github.com/aandergr/kspalculator/releases.
+Installation is then done by simply unzipping the archive. Make sure you have [Python](https://www.python.org/),
+at least version 3.2 installed. You might run `./kspalculator.py -V` in kspalculator's folder to ensure
+installation suceeded.
+
+### Basic Usage
+
+
+
+### Advanced Options
+
+### Example Sessions
+
+#### Mission to Mun
+
+Imagine we build a light Mun lander, having a payload of 1320 kg. That is a Mk1 Command Pod, four LT-05 Landing
+Struts, a Parachute, a Heat Shield, a Stack Decoupler and Solar Panels. We want to have two stages: the upper one
+flying from Low Kerbin Orbit to Mun, landing there, and the flying back to Kerbin; and the lower one launching the
+lander stage from Kerbin Space Center to Low Kerbin Orbit.
+
+After having determined the payload of the stage, we need to figure out Delta-v requirements, acceleration
+requirements and air pressure at the different flight phases.
+
+In this case air pressure is easy: As the Mun does not have any atmosphere, and the stage starts its way already
+being in orbit, it is clear that the lander will be designed to only fly through vacuum.
+
+Needed Delta-v can be easily read at Delta-v maps or calculated by calculation tools found in the internet (see
+links section later in this document). We find out, that we need 1170 m/s from LKO to Low Mun Orbit, then 580 m/s
+for landing at Mun, 580 m/s for starting at Mun and later 310 m/s for returning to Kerbin. Additionally, in this
+example we want to have 700 m/s Delta-v as a reserve.
+
+Now let's think about acceleration. As we land and start on Mun, we indeed have constraints regarding minimum
+acceleration, because we need to counteract Mun's gravity. In this example, we want to have at least 2*g* = 3.3
+m/s² acceleration when starting to land at Mun (i.e. when having reached Low Mun Orbit), and 3*g* = 5.0 m/s² to
+launch at Mun, *g* being Mun's surface gravity, which is about 1.65 m/s² as can be found out in the in-game
+knowledge base.
+
+Do we have any preferences? Yes we do. We're building a lander utilizing LT-05 Micro Landing Struts, which are
+quite bad, so it would be nice to prefer engines which have a short length. Thus, we add `--length` flag to
+kspalculator invocation. Additionally, our Payload has radial size *small*, so it would be cool if the propulsion
+system also had this radius. We add `-R small`.
+
+Doing so, we get:
+```
+$ ./kspalculator.py 1320 -R small --length 1170 580:3.3 580:5.0 310 700
+48-7S Spark
+	Total Mass: 6145 kg (including payload and full tanks)
+	Cost: 1670
+	Liquid fuel: 840 units (4725 kg full tank mass)
+	Requires: PropulsionSystems
+	Radial size: Tiny
+	Gimbal: 3.0 °
+	Engine is short enough to be used with LT-05 Micro Landing Struts
+	Performance:
+	[...]
+
+LV-909 Terrier
+	Total Mass: 6320 kg (including payload and full tanks)
+	Cost: 1190
+	Liquid fuel: 800 units (4500 kg full tank mass)
+	Requires: AdvancedRocketry
+	Radial size: Small
+	Gimbal: 4.0 °
+	Engine is short enough to be used with LT-05 Micro Landing Struts
+	Performance:
+	  1:  1170 m/s @ vacuum     9.49 m/s² - 13.42 m/s²    6.3 t -   4.5 t
+	  2:   580 m/s @ vacuum    13.42 m/s² - 15.92 m/s²    4.5 t -   3.8 t
+	  3:   580 m/s @ vacuum    15.92 m/s² - 18.90 m/s²    3.8 t -   3.2 t
+	  4:   310 m/s @ vacuum    18.90 m/s² - 20.72 m/s²    3.2 t -   2.9 t
+	  5:   700 m/s @ vacuum    20.72 m/s² - 25.48 m/s²    2.9 t -   2.4 t
+	  6:    51 m/s @ vacuum    25.48 m/s² - 25.86 m/s²    2.4 t -   2.3 t
+
+[...]
+
+LV-T30 Reliant
+	Total Mass: 11008 kg (including payload and full tanks)
+	Cost: 2825
+	Liquid fuel: 1500 units (8438 kg full tank mass)
+	Requires: GeneralRocketry
+	Radial size: Small
+	Engine generates electricity
+	Engine is short enough to be used with LT-2 Landing Struts
+	Performance:
+	[...]
+
+[...]
+```
+(Output was shortened)
+
+Of the suggested designs, all are the best by some criteria. The first one, using Spark engine, is the one having
+the lowest total mass, but in this example we do not want to use it because we did not research "Propulsion
+Systems" yet. We choose the Terrier design as we think it serves best our needs. Note that the tool also suggests
+the Reliant because of lower technology requirements, as well as some other nice designs which we skipped in this
+document to save space.
+
+Now build the stage adding the 800 Unit Fuel Tank and the Terrier engine under your payload. Then add a stack
+decoupler (which weights 50 kg) as we're building the launcher stage.
+
+The payload for the launcher stage is 6370 kg (i.e. the lander stage plus 50 kg stack decoupler). Safe Delta-v and
+acceleration requirements for a launch to LKO have been found out to be 905 m/s with 13 m/s² at 1 ATM and then
+3650 m/s with 13 m/s² at 0.18 ATM.
+
+We want to use solid fuel boosters for the launch, so we add `--boosters`. Additionaly, we prefer engines with
+thrust vectoring as it may be helpful to counteract turbulences during launch, so we add `--gimbal`. *Small* is
+still our preferred radial size. Now we determine best launcher designs:
+```
+$ ./kspalculator.py 6370 --boosters --gimbal -R small 905:13:1 3650:13:0.18
+RE-I5 Skipper
+	Total Mass: 89320 kg (including payload and full tanks)
+	Cost: 18258
+	Liquid fuel: 5600 units (31500 kg full tank mass)
+	Requires: HeavyRocketry
+	Radial size: Large
+	Gimbal: 2.0 °
+	Engine generates electricity
+	Radially attached 2 * S1 Kickback SFB
+	SFBs mounted on TT-70 Radial Decoupler, Advanced Nose Cone, 2 * EAS-4 Strut Connector each
+	Performance:
+	 *1:   905 m/s @ 1.00 atm  13.30 m/s² - 21.35 m/s²   89.3 t -  55.6 t
+	 *2:   213 m/s @ 0.18 atm  23.59 m/s² - 26.08 m/s²   55.6 t -  50.3 t
+	  3:  3437 m/s @ 0.18 atm  15.55 m/s² - 47.68 m/s²   40.9 t -  13.3 t
+	  4:   107 m/s @ 0.18 atm  47.68 m/s² - 49.37 m/s²   13.3 t -  12.9 t
+
+4 * Mk-55 Thud, radially mounted
+	Total Mass: 108520 kg (including payload and full tanks)
+	Cost: 19467
+	Liquid fuel: 4600 units (25875 kg full tank mass)
+	Requires: HeavyRocketry
+	Radial size: Small
+	Gimbal: 8.0 °
+	Engine is short enough to be used with LT-05 Micro Landing Struts
+	Radially attached 3 * S1 Kickback SFB
+	SFBs mounted on TT-70 Radial Decoupler, Advanced Nose Cone, 2 * EAS-4 Strut Connector each
+	You might limit SFB thrust to 79.5 %
+	Performance:
+	 *1:   905 m/s @ 1.00 atm  16.42 m/s² - 26.35 m/s²  108.5 t -  67.6 t
+	 *2:   637 m/s @ 0.18 atm  29.12 m/s² - 39.36 m/s²   67.6 t -  50.0 t
+	  3:  3013 m/s @ 0.18 atm  13.15 m/s² - 36.68 m/s²   35.8 t -  12.9 t
+	  4:     2 m/s @ 0.18 atm  36.68 m/s² - 36.71 m/s²   12.9 t -  12.8 t
+
+[...]
+```
+(Output was shortened)
+
+The asterics in the performance tables indicate that the phase of flight is done by solid fuel boosters. The SFB
+thrust limit suggestion is the minimum thrust required to fulfil your acceleration constraints.
+
+Now build one of the launchers being suggested by kspalculator and we're ready to do a giant leap for kerbinkind.
+
+## Helpful Links
