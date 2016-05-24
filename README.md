@@ -62,17 +62,18 @@ installation succeeded.
 
 kspalculator is invoked on the command line. Syntax is
 ```
-kspalculator.py [--boosters] [--cost] [preferences] <payload> <Delta-v[:acceleration[:pressure]]> [Delta-v[:acceleration[:pressure]] ...]
+kspalculator.py [--boosters] [--cost] [preferences] <payload> <Delta-v[:acceleration[:pressure]] [...]>
 ```
 
-where `payload` is the payload in kg, and `Delta-v[:acceleration[:pressure]]` are tuples of required Delta-v in 
-m/s, acceleration in m/s² and environment pressure in ATM for each flight phase. Acceleration and pressure are 
-optional and default to zero. You have to specify at least one of these tuples.
-
+where `payload` is the payload in kg and `Delta-v[:acceleration[:pressure]]` are tuples of required Delta-v in 
+m/s, acceleration in m/s² and environment pressure in ATM (0.0 = vacuum, 1.0 = kerbin sea level pressure) for each 
+flight phase. You have to specify at least one of these tuples. Acceleration and pressure are optional and default 
+to zero.
+ 
 If you add `--bosters`, kspalculator will consider adding solid fuel boosters. This is very useful for launcher 
 stages.
 
-Options for preferences are:
+Options for `preferences` are:
  * `--preferred-radius {tiny,small,large,extralarge}`: Preferred radius of the stage. Tiny = 0.625 m,
 Small = 1.25 m, Large = 2.5 m (Rockomax), ExtraLarge = 3.75 m (Kerbodyne),
  * `--electricity`: Prefer engines generating electricity,
@@ -82,17 +83,17 @@ Small = 1.25 m, Large = 2.5 m (Rockomax), ExtraLarge = 3.75 m (Kerbodyne),
 
 In contrast to the constraints, preferences aren't hard requirements for a design suggestion to be shown up.  
 Adding preferences only adds criterias under which designs may be considered better than others. This means, 
-speciying more preferences, *more* designs will be suggested.
+specifying more preferences, *more* designs will be suggested.
 
-If you specify `--cost`, results will be sorted by their coss instead of their mass.
+If you specify `--cost`, results will be sorted by their cost instead of their mass.
 
 For a brief reference for options, call `kspalculator.py --help`. To display the version of the tool as well as 
 the corresponding version of Kerbal Space Program, call `kspalculator.py --version`.
 
-Note that kspalculator calculates optimal design for one stage only (or two if you allow boosters, where the first 
-is a stage only utilizing solid fuel boosters). It will never split your design up into multiple stages.
+Note that kspalculator calculates optimal designs for one stage only (or two if you allow boosters, where the 
+first is a stage only utilizing solid fuel boosters). It will never split up your design into multiple stages.
 
-### Example Session
+### Example
 
 Imagine we build a light Mun lander, having a payload of 1320 kg. That is a Mk1 Command Pod, four LT-05 Landing
 Struts, a Parachute, a Heat Shield, a Stack Decoupler and Solar Panels. We want to have two stages: the upper one
