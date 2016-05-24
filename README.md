@@ -55,7 +55,7 @@ beginning and end of each *flight phase*.
 
 First, fetch the most recent version of kspalculator at https://github.com/aandergr/kspalculator/releases.
 Installation is then done by simply unzipping the archive. Make sure you have [Python](https://www.python.org/),
-at least version 3.2 installed. You might run `./kspalculator.py -V` in kspalculator's folder to ensure
+at least version 3.4 installed. You might run `./kspalculator.py -V` in kspalculator's folder to ensure
 installation suceeded.
 
 ### Basic Usage
