@@ -5,7 +5,7 @@ from textwrap import fill
 
 from parts import kspversion
 
-version = '0.9-rc'
+version = '0.9'
 
 def nonnegative_float(string):
     fl = float(string)
