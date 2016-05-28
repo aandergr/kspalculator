@@ -1,18 +1,19 @@
+# -*- coding: utf-8 -*-
+
 from collections import namedtuple
-from enum import Enum
 
 # Source: http://wiki.kerbalspaceprogram.com/wiki/Parts, as well as in-game info
 
 kspversion = '1.1.2'
 
-class RadialSize(Enum):
+class RadialSize(object):
     Tiny = 1
     Small = 2
     Large = 3
     ExtraLarge = 4
     RdMntd = 9      # radially mounted
 
-class ResearchNode(Enum):
+class ResearchNode(object):
     # only relevant nodes yet
     Start = 11
     BasicRocketry = 21
