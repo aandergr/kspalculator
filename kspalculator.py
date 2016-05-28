@@ -66,7 +66,7 @@ args = parser.parse_args()
 
 # we have the import here (instead of above) to have short execution time in
 # case of calling with e.g. '-h' only.
-from design import FindDesigns
+from finder import Finder
 from parts import RadialSize
 
 ps = None
@@ -80,27 +80,17 @@ if args.preferred_radius is not None:
     else:
         ps = RadialSize.ExtraLarge
 
-dv = []
-ac = []
-pr = []
+delta_vs = []
 for st in args.dvtuples:
     s = st.split(':')
-    dv.append(float(s[0]))
-    ac.append(0.0 if len(s) < 2 else float(s[1]))
-    pr.append(0.0 if len(s) < 3 else float(s[2]))
+    dv = float(s[0])
+    ac = 0.0 if len(s) < 2 else float(s[1])
+    pr = 0.0 if len(s) < 3 else float(s[2])
+    delta_vs.append((dv, ac, pr))
 
-all_designs = FindDesigns(args.payload, pr, dv, ac, ps,
-        args.gimbal, args.boosters, args.electricity, args.length)
-
-if args.show_all_solutions:
-    D = all_designs
-else:
-    D = [d for d in all_designs if d.IsBest]
-
-if args.cheapest:
-    D = sorted(D, key=lambda dsg: dsg.cost)
-else:
-    D = sorted(D, key=lambda dsg: dsg.mass)
+finder = Finder(args.payload, ps, delta_vs, args.gimbal, args.boosters, args.electricity,
+                args.length)
+D = finder.FindDesigns(not args.show_all_solutions, args.cheapest)
 
 if not args.quiet:
     print(fill("Printing the best (and only the best!) designs (i.e. engine and tank combinations) "
