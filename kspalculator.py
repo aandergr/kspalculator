@@ -69,27 +69,28 @@ args = parser.parse_args()
 from finder import Finder
 from parts import RadialSize
 
-ps = None
+preferred_size = None
 if args.preferred_radius is not None:
     if args.preferred_radius == "tiny":
-        ps = RadialSize.Tiny
+        preferred_size = RadialSize.Tiny
     elif args.preferred_radius == "small":
-        ps = RadialSize.Small
+        preferred_size = RadialSize.Small
     elif args.preferred_radius == "large":
-        ps = RadialSize.Large
+        preferred_size = RadialSize.Large
     else:
-        ps = RadialSize.ExtraLarge
+        preferred_size = RadialSize.ExtraLarge
 
-delta_vs = []
+dv = []
+ac = []
+pr = []
 for st in args.dvtuples:
     s = st.split(':')
-    dv = float(s[0])
-    ac = 0.0 if len(s) < 2 else float(s[1])
-    pr = 0.0 if len(s) < 3 else float(s[2])
-    delta_vs.append((dv, ac, pr))
+    dv.append(float(s[0]))
+    ac.append(0.0 if len(s) < 2 else float(s[1]))
+    pr.append(0.0 if len(s) < 3 else float(s[2]))
 
-finder = Finder(args.payload, ps, delta_vs, args.gimbal, args.boosters, args.electricity,
-                args.length)
+finder = Finder(args.payload, preferred_size, dv, ac, pr, args.gimbal, args.boosters,
+                args.electricity, args.length)
 D = finder.FindDesigns(not args.show_all_solutions, args.cheapest)
 
 if not args.quiet:
