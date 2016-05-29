@@ -108,7 +108,7 @@ from parts import RadialSize
 
 def _ParseBodyLocationPair(pair):
     start_body, start_location = pair[0].split('.')
-    end_body, end_location = pair[0].split('.')
+    end_body, end_location = pair[1].split('.')
 
     start_body = CelestialBody.__members__[start_body]
     start_location = Location.__members__[start_location]
