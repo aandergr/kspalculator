@@ -27,26 +27,21 @@ class Finder(object):
         self.electricity = electricity
         self.length = length
 
-    def FindDesigns(self, best_only=True, order_by_cost=False):
-        print('%r ' % self.payload)
-        print('%r ' % self.delta_vs)
-        print('%r ' % self.accelerations)
-        print('%r ' % self.pressures)
-        print('%r ' % self.preferred_radial_size)
-        print('G: %r ' % self.gimbal)
-        print('B: %r ' % self.boosters)
-        print('E: %r ' % self.electricity)
-        print('L: %r ' % self.length)
-        all_designs = FindDesigns(self.payload, self.delta_vs, self.accelerations, self.pressures,
-                                  self.preferred_radial_size, self.gimbal, self.boosters,
-                                  self.electricity, self.length)
+    def Find(self, best_only=True, order_by_cost=False):
+        all_designs = FindDesigns(self.payload,
+                                  self.pressures,
+                                  self.delta_vs,
+                                  self.accelerations,
+                                  self.preferred_radial_size,
+                                  self.gimbal,
+                                  self.boosters,
+                                  self.electricity,
+                                  self.length)
 
         if best_only:
             designs = [d for d in all_designs if d.IsBest]
         else:
             designs = all_designs
-
-        print('%s' % str(all_designs))
 
         if order_by_cost:
             return sorted(designs, key=lambda dsg: dsg.cost)

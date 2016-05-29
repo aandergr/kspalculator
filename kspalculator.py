@@ -91,7 +91,7 @@ for st in args.dvtuples:
 
 finder = Finder(args.payload, preferred_size, dv, ac, pr, args.gimbal, args.boosters,
                 args.electricity, args.length)
-D = finder.FindDesigns(not args.show_all_solutions, args.cheapest)
+D = finder.Find(not args.show_all_solutions, args.cheapest)
 
 if not args.quiet:
     print(fill("Printing the best (and only the best!) designs (i.e. engine and tank combinations) "
