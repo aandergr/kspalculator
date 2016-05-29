@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# Python 2.7 support.
+from __future__ import division
 
 from math import ceil
 

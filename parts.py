@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+# Python 2.7 support.
+from __future__ import division
+from enum import Enum
 
 from collections import namedtuple
-
-from enum import Enum
 
 # Source: http://wiki.kerbalspaceprogram.com/wiki/Parts, as well as in-game info
 

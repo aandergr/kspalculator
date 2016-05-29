@@ -1,4 +1,8 @@
+# Python 2.7 support.
+from __future__ import division
+
 from math import log, exp, fsum
+
 #from warnings import warn
 
 # *_needed_fuel() functions return needed kilograms of liquid combustible for
