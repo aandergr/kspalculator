@@ -94,7 +94,9 @@ class DeltaVEdge(object):
         # TODO - The linear attribution of delta_v is almost certainly incorrect.
         costs = []
         pressures = []
-        altitude = 0
+        # Add a safety factor by considering everything up until 2 H as surface atmospheric
+        # pressure.
+        altitude = 2 * H
         exponent = 0
         last_delta_v = 0
         while altitude < atmospheric_height:
