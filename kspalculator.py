@@ -1,46 +1,82 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from argparse import ArgumentParser, ArgumentTypeError, SUPPRESS
 from textwrap import fill
 
 from parts import kspversion
+from bodies import CelestialBody, Location, CalculateCost
 
 version = '0.9'
 
-def nonnegative_float(string):
-    fl = float(string)
+def nonnegative_float(value):
+    fl = float(value)
     if fl < 0.0:
-        raise ArgumentTypeError("%r is negative" % string)
+        raise ArgumentTypeError("%r is negative" % value)
     return fl
 
-def positive_float(string):
-    fl = float(string)
+
+def positive_float(value):
+    fl = float(value)
     if fl <= 0.0:
-        raise ArgumentTypeError("%r is not positive" % string)
+        raise ArgumentTypeError("%r is not positive" % value)
     return fl
 
-def dvtuple(string):
-    s = string.split(':')
+
+def normalize_body_locations(values):
+    """Verifies that the given list of values contains valid body.location pairs."""
+
+    def Normalize(pair):
+        body_and_location = pair.split('.')
+        if len(body_and_location) != 2:
+            raise ArgumentTypeError("%r is not of the form body.location" % pair)
+
+        body, location = body_and_location
+        body = body.capitalize()
+        location = location.capitalize()
+        if not body in CelestialBody.__members__.keys():
+            raise ArgumentTypeError("%s is not a valid celestial body" % body)
+        if not location in Location.__members__.keys():
+            raise ArgumentTypeError("%s is not a valid location" % location)
+        return "%s.%s" % (body, location)
+
+    return "%s-%s" % (Normalize(values[0]), Normalize(values[1]))
+
+
+def dvtuple(value):
+    body_locations = value.split('-')
+    if len(body_locations) == 2:
+        return normalize_body_locations(body_locations)
+
+    s = value.split(':')
     positive_float(s[0])
     if len(s) > 1:
         nonnegative_float(s[1])
     if len(s) > 2:
         nonnegative_float(s[2])
     if len(s) > 3:
-        raise ArgumentTypeError("%r contains too many ':'" % string)
-    return string
+        raise ArgumentTypeError("%r contains too many ':'s" % value)
+    return value
+
 
 epilog = "For a more detailed explanation on how to use this tool, please consider reading " \
         "README.md file.  If you encounter any issues, do not hesitate to report them at "\
         "https://github.com/aandergr/kspalculator/issues."
 
+bodies = ', '.join(sorted([b.name.lower() for b in CelestialBody]))
+locations = ', '.join(sorted([l.name.lower() for l in Location]))
+
 parser = ArgumentParser(description='Determine best rocket design for given constraints',
         epilog=epilog)
 parser.add_argument('payload', type=nonnegative_float, help='Payload in kg')
-parser.add_argument('dvtuples', type=dvtuple, metavar='deltav[:min_acceleration[:pressure]]', nargs='+',
-        help='Tuples of required delta v (in m/s), minimum acceleration (in m/s²) and environment '
-        'pressure (0.0 = vacuum, 1.0 = ATM) at each flight phase. Default for minimum acceleration '
-        'is 0 m/s², default for pressure is vacuum.')
+parser.add_argument('dvtuples', type=dvtuple,
+                    metavar='deltav[:min_acceleration[:pressure]] or body.location', nargs='+',
+        help='One or more tuples of required delta v (in m/s), minimum acceleration (in m/s²) and '
+             'environment pressure (0.0 = vacuum, 1.0 = ATM) at each flight phase. Default for '
+             'minimum acceleration is 0 m/s², default for pressure is vacuum. Alternatively, '
+             'phases may be given as "body.location-body.location" pairs where valid body values '
+             'are: ' + bodies + ' and locations are: ' + locations + '. e.g., '
+             'a stage from Kerbin orbit to Minmus surface would be kerbin.orbit-minmus.surface')
 parser.add_argument('-V', '--version', action='version',
         version=('kspalculator version %s, for KSP version %s.' % (version, kspversion)))
 parser.add_argument('-q', '--quiet', action='store_true', help='Do not print prologue')
@@ -69,6 +105,31 @@ args = parser.parse_args()
 from finder import Finder
 from parts import RadialSize
 
+
+def _ParseBodyLocationPair(pair):
+    start_body, start_location = pair[0].split('.')
+    end_body, end_location = pair[0].split('.')
+
+    start_body = CelestialBody.__members__[start_body]
+    start_location = Location.__members__[start_location]
+    end_body = CelestialBody.__members__[end_body]
+    end_location = Location.__members__[end_location]
+
+    return CalculateCost(start_body, start_location, end_body, end_location)
+
+
+def _ParseDVParam(str_value):
+    body_locations = str_value.split('-')
+    if len(body_locations) == 2:
+        return _ParseBodyLocationPair(body_locations)
+
+    s = str_value.split(':')
+    deltav = float(s[0])
+    acceleration = 0.0 if len(s) < 2 else float(s[1])
+    pressure = 0.0 if len(s) < 3 else float(s[2])
+    return [deltav], [acceleration], [pressure]
+
+
 preferred_size = None
 if args.preferred_radius is not None:
     if args.preferred_radius == "tiny":
@@ -84,10 +145,10 @@ dv = []
 ac = []
 pr = []
 for st in args.dvtuples:
-    s = st.split(':')
-    dv.append(float(s[0]))
-    ac.append(0.0 if len(s) < 2 else float(s[1]))
-    pr.append(0.0 if len(s) < 3 else float(s[2]))
+    deltavs, accelerations, pressures = _ParseDVParam(st)
+    dv.extend(deltavs)
+    ac.extend(accelerations)
+    pr.extend(pressures)
 
 finder = Finder(args.payload, preferred_size, dv, ac, pr, args.gimbal, args.boosters,
                 args.electricity, args.length)
