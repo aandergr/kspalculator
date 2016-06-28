@@ -40,7 +40,7 @@ class Location(Enum):
     Surface = 0
     Orbit = 1
     Stationary = 2
-    SOI = 3
+    Soi = 3
     Intercept = 4
 
 
@@ -94,7 +94,7 @@ class DeltaVEdge(object):
         # TODO - The linear attribution of delta_v is almost certainly incorrect.
         costs = []
         pressures = []
-        # Add a safety factor by considering everything up until 2 H as surface atmospheric
+        # Add a safety factor by considering everything up until 2.5 H as surface atmospheric
         # pressure.
         altitude = 2 * H
         exponent = 0
@@ -132,70 +132,70 @@ DeltaVEdges = [
     DeltaVEdge(160, CelestialBody.Minmus, Location.Intercept, Location.Orbit),
     DeltaVEdge(180, CelestialBody.Minmus, Location.Orbit, Location.Surface),
 
-    DeltaVEdge(950, CelestialBody.Kerbin, Location.Orbit, Location.SOI),
+    DeltaVEdge(950, CelestialBody.Kerbin, Location.Orbit, Location.Soi),
 
-    DeltaVEdge(6000, CelestialBody.Kerbin, Location.SOI, Location.SOI,
+    DeltaVEdge(6000, CelestialBody.Kerbin, Location.Soi, Location.Soi,
                CelestialBody.Kerbol),
-    DeltaVEdge(13700, CelestialBody.Kerbol, Location.SOI, Location.Orbit),
+    DeltaVEdge(13700, CelestialBody.Kerbol, Location.Soi, Location.Orbit),
     DeltaVEdge(67000, CelestialBody.Kerbol, Location.Orbit, Location.Surface),
 
-    DeltaVEdge(760, CelestialBody.Kerbin, Location.SOI, Location.Intercept,
+    DeltaVEdge(760, CelestialBody.Kerbin, Location.Soi, Location.Intercept,
                CelestialBody.Moho, 2520),
     DeltaVEdge(2410, CelestialBody.Moho, Location.Intercept, Location.Orbit),
     DeltaVEdge(870, CelestialBody.Moho, Location.Orbit, Location.Surface),
 
-    DeltaVEdge(90, CelestialBody.Kerbin, Location.SOI, Location.Intercept,
+    DeltaVEdge(90, CelestialBody.Kerbin, Location.Soi, Location.Intercept,
                CelestialBody.Eve, 430),
-    DeltaVEdge(80, CelestialBody.Eve, Location.Intercept, Location.SOI),
-    DeltaVEdge(1330, CelestialBody.Eve, Location.SOI, Location.Orbit),
+    DeltaVEdge(80, CelestialBody.Eve, Location.Intercept, Location.Soi),
+    DeltaVEdge(1330, CelestialBody.Eve, Location.Soi, Location.Orbit),
     DeltaVEdge(8000, CelestialBody.Eve, Location.Orbit, Location.Surface),
-    DeltaVEdge(60, CelestialBody.Eve, Location.SOI, Location.Intercept,
+    DeltaVEdge(60, CelestialBody.Eve, Location.Soi, Location.Intercept,
                CelestialBody.Gilly),
     DeltaVEdge(410, CelestialBody.Gilly, Location.Intercept, Location.Orbit),
     DeltaVEdge(30, CelestialBody.Gilly, Location.Orbit, Location.Surface),
 
-    DeltaVEdge(130, CelestialBody.Kerbin, Location.SOI, Location.Intercept,
+    DeltaVEdge(130, CelestialBody.Kerbin, Location.Soi, Location.Intercept,
                CelestialBody.Duna, 10),
-    DeltaVEdge(250, CelestialBody.Duna, Location.Intercept, Location.SOI),
-    DeltaVEdge(360, CelestialBody.Duna, Location.SOI, Location.Orbit),
+    DeltaVEdge(250, CelestialBody.Duna, Location.Intercept, Location.Soi),
+    DeltaVEdge(360, CelestialBody.Duna, Location.Soi, Location.Orbit),
     DeltaVEdge(1450, CelestialBody.Duna, Location.Orbit, Location.Surface),
-    DeltaVEdge(30, CelestialBody.Duna, Location.SOI, Location.Intercept,
+    DeltaVEdge(30, CelestialBody.Duna, Location.Soi, Location.Intercept,
                CelestialBody.Ike),
     DeltaVEdge(180, CelestialBody.Ike, Location.Intercept, Location.Orbit),
     DeltaVEdge(390, CelestialBody.Ike, Location.Orbit, Location.Surface),
 
-    DeltaVEdge(610, CelestialBody.Kerbin, Location.SOI, Location.Intercept,
+    DeltaVEdge(610, CelestialBody.Kerbin, Location.Soi, Location.Intercept,
                CelestialBody.Dres, 1010),
     DeltaVEdge(1290, CelestialBody.Dres, Location.Intercept, Location.Orbit),
     DeltaVEdge(430, CelestialBody.Dres, Location.Orbit, Location.Surface),
 
-    DeltaVEdge(980, CelestialBody.Kerbin, Location.SOI, Location.Intercept,
+    DeltaVEdge(980, CelestialBody.Kerbin, Location.Soi, Location.Intercept,
                CelestialBody.Jool, 270),
-    DeltaVEdge(160, CelestialBody.Jool, Location.Intercept, Location.SOI),
-    DeltaVEdge(2810, CelestialBody.Jool, Location.SOI, Location.Orbit),
+    DeltaVEdge(160, CelestialBody.Jool, Location.Intercept, Location.Soi),
+    DeltaVEdge(2810, CelestialBody.Jool, Location.Soi, Location.Orbit),
     DeltaVEdge(14000, CelestialBody.Jool, Location.Orbit, Location.Surface),
-    DeltaVEdge(160, CelestialBody.Jool, Location.SOI, Location.Intercept,
+    DeltaVEdge(160, CelestialBody.Jool, Location.Soi, Location.Intercept,
                CelestialBody.Pol, 700),
     DeltaVEdge(820, CelestialBody.Pol, Location.Intercept, Location.Orbit),
     DeltaVEdge(130, CelestialBody.Pol, Location.Orbit, Location.Surface),
-    DeltaVEdge(220, CelestialBody.Jool, Location.SOI, Location.Intercept,
+    DeltaVEdge(220, CelestialBody.Jool, Location.Soi, Location.Intercept,
                CelestialBody.Bop, 2440),
     DeltaVEdge(900, CelestialBody.Bop, Location.Intercept, Location.Orbit),
     DeltaVEdge(220, CelestialBody.Bop, Location.Orbit, Location.Surface),
-    DeltaVEdge(400, CelestialBody.Jool, Location.SOI, Location.Intercept,
+    DeltaVEdge(400, CelestialBody.Jool, Location.Soi, Location.Intercept,
                CelestialBody.Tylo),
     DeltaVEdge(1100, CelestialBody.Tylo, Location.Intercept, Location.Orbit),
     DeltaVEdge(2270, CelestialBody.Tylo, Location.Orbit, Location.Surface),
-    DeltaVEdge(620, CelestialBody.Jool, Location.SOI, Location.Intercept,
+    DeltaVEdge(620, CelestialBody.Jool, Location.Soi, Location.Intercept,
                CelestialBody.Vall),
     DeltaVEdge(910, CelestialBody.Vall, Location.Intercept, Location.Orbit),
     DeltaVEdge(860, CelestialBody.Vall, Location.Orbit, Location.Surface),
-    DeltaVEdge(930, CelestialBody.Jool, Location.SOI, Location.Intercept,
+    DeltaVEdge(930, CelestialBody.Jool, Location.Soi, Location.Intercept,
                CelestialBody.Laythe),
     DeltaVEdge(1070, CelestialBody.Laythe, Location.Intercept, Location.Orbit),
     DeltaVEdge(2900, CelestialBody.Laythe, Location.Orbit, Location.Surface),
 
-    DeltaVEdge(1140, CelestialBody.Kerbin, Location.SOI, Location.Intercept,
+    DeltaVEdge(1140, CelestialBody.Kerbin, Location.Soi, Location.Intercept,
                CelestialBody.Eeloo, 1330),
     DeltaVEdge(1370, CelestialBody.Eeloo, Location.Intercept, Location.Orbit),
     DeltaVEdge(620, CelestialBody.Eeloo, Location.Orbit, Location.Surface),
@@ -212,6 +212,7 @@ _stage_graph = _BuildStageGraph()
 
 
 def CalculateCost(start_body, start_location, end_body, end_location):
+    """Returns [deltav], [acceleration], [pressure] lists for the given location transfer."""
     path = _ExpandTripEdges((start_body, start_location), (end_body, end_location))
     if not path:
         return [0], [0], [0]
