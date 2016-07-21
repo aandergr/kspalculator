@@ -41,6 +41,7 @@ class TestPhysics(TestCase):
         m_c = physics.sflf_needed_fuel([905, 3650], [260, 284.6], [195, 215.5], 10040, 50, 24000, 4500)
         self.assertAlmostEqual(m_c, 63162.60, places=1)
     def test_sflf_performance(self):
+        # pylint:disable=unused-variable
         r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op = \
                 physics.sflf_performance([1000, 500], [250, 260], [150, 170],
                         [0,0], [0,0], [0,0], 10000, 7000, 100, 5000, 1000)

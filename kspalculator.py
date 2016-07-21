@@ -3,7 +3,8 @@
 from argparse import ArgumentParser, ArgumentTypeError, SUPPRESS
 from textwrap import fill
 
-from parts import kspversion
+from finder import Finder
+from parts import RadialSize, kspversion
 
 version = '0.9'
 
@@ -20,13 +21,13 @@ def positive_float(string):
     return fl
 
 def dvtuple(string):
-    s = string.split(':')
-    positive_float(s[0])
-    if len(s) > 1:
-        nonnegative_float(s[1])
-    if len(s) > 2:
-        nonnegative_float(s[2])
-    if len(s) > 3:
+    spl = string.split(':')
+    positive_float(spl[0])
+    if len(spl) > 1:
+        nonnegative_float(spl[1])
+    if len(spl) > 2:
+        nonnegative_float(spl[2])
+    if len(spl) > 3:
         raise ArgumentTypeError("%r contains too many ':'" % string)
     return string
 
@@ -63,11 +64,6 @@ parser.add_argument('-g', '--gimbal', action='count', default=0,
 parser.add_argument('--show-all-solutions', action='store_true', help=SUPPRESS)
 
 args = parser.parse_args()
-
-# we have the import here (instead of above) to have short execution time in
-# case of calling with e.g. '-h' only.
-from finder import Finder
-from parts import RadialSize
 
 preferred_size = None
 if args.preferred_radius is not None:

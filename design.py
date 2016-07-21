@@ -83,7 +83,6 @@ class Design:
         self.cost = self.cost - self.specialfuel/(1+f_e)*1.1/0.9*0.04
     def AddXenonTanks(self, xf):
         # xf is full tank mass
-        f_e = self.mainengine.f_e
         tankcount = ceil(xf / parts.XenonTank.m_full)
         self.specialfuel = tankcount * parts.XenonTank.m_full
         self.specialfueltype = "Xenon"
@@ -92,7 +91,6 @@ class Design:
         self.cost = self.cost + tankcount*parts.XenonTank.cost
     def AddMonoPropellantTanks(self, mp, tank):
         # mp is full tank mass
-        f_e = self.mainengine.f_e
         tankcount = ceil(mp / tank.m_full)
         self.specialfuel = tankcount * tank.m_full
         self.specialfueltype = "MonoPropellant"
@@ -129,19 +127,21 @@ class Design:
     def EnoughAcceleration(self, min_acceleration):
         if self.performance is None:
             return False
+        # pylint: disable=unused-variable
         dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
         for i in range(len(a_s)):
             if a_s[i] < min_acceleration[op[i]]:
                 return False
         return True
     def PrintPerformance(self):
-        dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
+        dv, p, a_s, a_t, m_s, m_t, solid, dummy = self.performance
         for i in range(len(dv)):
             p_str = ("%.2f atm" % p[i]) if p[i] > 0 else "vacuum  "
             solid_str = "*" if solid[i] else " "
             print("\t %s%i:  %4.0f m/s @ %s  %5.2f m/s² - %5.2f m/s²  %5.1f t - %5.1f t" % \
                     (solid_str, i+1, dv[i], p_str, a_s[i], a_t[i], m_s[i]/1000.0, m_t[i]/1000.0))
-    def SetSFBLimit(self, pressure, acc):
+    def SetSFBLimit(self, acc):
+        # pylint: disable=unused-variable
         dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
         limit = 0.0
         for i in range(len(a_s)):
@@ -303,7 +303,7 @@ def CreateSingleLFESFBDesign(payload, pressure, dv, acc, eng, sfb, sfbcount):
     design.CalculatePerformance(dv, pressure)
     if not design.EnoughAcceleration(acc):
         return None
-    design.SetSFBLimit(pressure, acc)
+    design.SetSFBLimit(acc)
     return design
 
 def CreateRadialLFEnginesDesign(payload, pressure, dv, acc, eng, size, count):
@@ -330,7 +330,7 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, size, count, sfb, 
     design.CalculatePerformance(dv, pressure)
     if not design.EnoughAcceleration(acc):
         return None
-    design.SetSFBLimit(pressure, acc)
+    design.SetSFBLimit(acc)
     return design
 
 # TODO: add ship radially mounted fuel tank + engine combinations

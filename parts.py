@@ -41,24 +41,15 @@ class ResearchNode(Enum):
             (self is ResearchNode.IonPropulsion):
             # interestingly, these nodes can be reached without having
             # researched the other *Rocketry technologies.
-            if a is ResearchNode.Start:
-                return True
-            else:
-                return False
+            return a is ResearchNode.Start
         if self is ResearchNode.PrecisionPropulsion:
-            if a is ResearchNode.PropulsionSystems or a.value <= 41:
-                return True
-            else:
-                return False
-        if (self is ResearchNode.AerospaceTech):
-            if (a is ResearchNode.HyperSonicFlight) or (a is ResearchNode.Start):
-                return True
-            else:
-                return False
+            return a is ResearchNode.PropulsionSystems or a.value <= 41
+        if self is ResearchNode.AerospaceTech:
+            return (a is ResearchNode.HyperSonicFlight) or (a is ResearchNode.Start)
         return a.value+10 <= self.value
 
     def MoreSophisticated(self, a):
-        return (self is not a and a.DependsOn(self))
+        return self is not a and a.DependsOn(self)
 
 # A note about length of engine: We have this option, because for landers with landing legs, short
 # engines are an advantage. So which height an engine has, depends on the compatibility with landing

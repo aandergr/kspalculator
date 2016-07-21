@@ -101,8 +101,7 @@ def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
             for i in range(f-1,-1,-1):
                 if f_limits[i] >= mc:
                     return i+1
-            else:
-                return 0
+            return 0
     f = f_adjust(0,0)
     precision = 0.001
     def mc_improve(mc_old):
@@ -113,7 +112,7 @@ def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
     current = 1
     m_c[0] = mc_improve(0)
     if m_c[0] is None:
-            return None
+        return None
     f = f_adjust(m_c[0],1)
     while True:
         m_c[current] = mc_improve(m_c[(current+1)%2])
