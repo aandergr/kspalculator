@@ -2,8 +2,9 @@ language: python
 python:
  - "3.4"
  - "3.5"
+ - "3.5-dev"
  - "nightly"
 script:
- - ./unittests.py
+ - python3 -m unittests
  - ./kspalculator.py 1320 -R small --length 1170 580:3.3 580:5.0 310 700
  - ./kspalculator.py 6370 --boosters --gimbal -R small 905:13:1 3650:13:0.18 -c
