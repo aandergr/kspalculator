@@ -1,13 +1,16 @@
 language: python
 python:
+ - "2.7"
  - "3.4"
  - "3.5"
  - "3.5-dev"
  - "nightly"
 install:
- - pip install pylint
+ - [[ $TRAVIS_PYTHON_VERSION == "2.7" ]] && pip install enum34
+ - [[ $TRAVIS_PYTHON_VERSION != "2.7" ]] && pip install pylint
 script:
- - python3 -m unittests -v
- - ./kspalculator.py 1320 -R small --length 1170 580:3.3 580:5.0 310 700
- - ./kspalculator.py 6370 --boosters --gimbal -R small 905:13:1 3650:13:0.18 -c
- - python3 -m pylint -r n -d invalid-name,bad-whitespace,bad-continuation,missing-docstring,line-too-long,fixme,too-many-arguments,consider-using-enumerate,too-many-locals,too-few-public-methods,too-many-instance-attributes,locally-disabled,too-many-return-statements,r0204,too-many-branches,too-many-nested-blocks kspalculator
+ - [[ $TRAVIS_PYTHON_VERSION == "2.7" ]] && python2 -m unittests -v
+ - [[ $TRAVIS_PYTHON_VERSION != "2.7" ]] && python3 -m unittests -v
+ - [[ $TRAVIS_PYTHON_VERSION != "2.7" ]] && ./kspalculator.py 1320 -R small --length 1170 580:3.3 580:5.0 310 700
+ - [[ $TRAVIS_PYTHON_VERSION != "2.7" ]] && ./kspalculator.py 6370 --boosters --gimbal -R small 905:13:1 3650:13:0.18 -c
+ - [[ $TRAVIS_PYTHON_VERSION != "2.7" ]] && python3 -m pylint -r n -d invalid-name,bad-whitespace,bad-continuation,missing-docstring,line-too-long,fixme,too-many-arguments,consider-using-enumerate,too-many-locals,too-few-public-methods,too-many-instance-attributes,locally-disabled,too-many-return-statements,r0204,too-many-branches,too-many-nested-blocks kspalculator

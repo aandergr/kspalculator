@@ -1,3 +1,5 @@
+# Note that these unit tests are expected to work on both python2 and python3.
+
 # Python 2.7 support.
 from __future__ import division
 
