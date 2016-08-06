@@ -47,7 +47,7 @@ within **less than a second**. The information shown about each design includes 
 required, because of rounding to tank sizes), the **acceleration at full thrust** as well as the **mass** at
 beginning and end of each *flight phase*.
 
-(By the way, we are talking about Kerbal Space Program, version 1.1.2)
+(By the way, we are talking about Kerbal Space Program, version 1.1.3)
 
 ## Usage
 

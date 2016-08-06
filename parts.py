@@ -7,7 +7,7 @@ from collections import namedtuple
 
 # Source: http://wiki.kerbalspaceprogram.com/wiki/Parts, as well as in-game info
 
-kspversion = '1.1.2'
+kspversion = '1.1.3'
 
 class RadialSize(Enum):
     Tiny = 1
