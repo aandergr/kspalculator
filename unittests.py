@@ -4,6 +4,9 @@ from unittest import TestCase, main
 
 import physics
 
+from finder import Finder
+from parts import RadialSize
+
 class TestPhysics(TestCase):
     def assertListAlmostEqual(self, first, second):
         if len(first) != len(second):
@@ -66,5 +69,14 @@ class TestPhysics(TestCase):
         self.assertListAlmostEqual(r_m_t, [21465.04, 18975.0, 13333.60, 10959.29, 10875.0])
         self.assertListEqual(r_solid, [True, True, False, False, False])
         self.assertListEqual(r_op, [0, 1, 1, 2, 2])
+
+class TestFinder(TestCase):
+    def test_finder(self):
+        """ Merely a test for check whether integration of kspalculator as a module works. """
+        f = Finder(1320, RadialSize.Small,
+                [1170, 580, 580, 210, 700], [0.0, 3.3, 5.0, 0.0, 0.0], 5*[0.0],
+                False, False, False, True)
+        designs = f.Find()
+        self.assertGreaterEqual(len(designs), 7)
 
 main()
