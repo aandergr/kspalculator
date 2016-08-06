@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
+# Python 2.7 support.
+from __future__ import division
 
 from unittest import TestCase, main
 
 import physics
-
-from finder import Finder
-from parts import RadialSize
 
 class TestPhysics(TestCase):
     def assertListAlmostEqual(self, first, second):
@@ -72,7 +70,9 @@ class TestPhysics(TestCase):
 
 class TestFinder(TestCase):
     def test_finder(self):
-        """ Merely a test for check whether integration of kspalculator as a module works. """
+        """ check whether integration of kspalculator as a module works """
+        from finder import Finder
+        from parts import RadialSize
         f = Finder(1320, RadialSize.Small,
                 [1170, 580, 580, 210, 700], [0.0, 3.3, 5.0, 0.0, 0.0], 5*[0.0],
                 False, False, False, True)
