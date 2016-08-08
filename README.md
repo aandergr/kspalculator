@@ -51,6 +51,12 @@ beginning and end of each *flight phase*.
 
 ## Usage
 
+### GUI
+
+There is an official web frontend for kspalculator at: https://kspalculator.appspot.com/.
+
+Here we explain how to use the kspalculator command line tool, but the basic concepts don't vary.
+
 ### Installation
 
 First, fetch the most recent version of kspalculator at https://github.com/aandergr/kspalculator/releases.
