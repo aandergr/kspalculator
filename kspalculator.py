@@ -111,6 +111,8 @@ if not args.quiet:
         print("- You do not need engine generating electric power.")
     if not args.length:
         print("- You do not care about length of engine.")
+    for warning in finder.lint():
+        print(fill("WARNING: "+warning))
     print(fill("Note that these options heavily influence which engine choices are shown to you. "
         "If these aren't your constraints, consult kspalculator.py --help and try again."))
     print()

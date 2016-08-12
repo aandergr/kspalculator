@@ -34,6 +34,30 @@ class Finder(object):
         self.electricity = electricity
         self.length = length
 
+    def lint(self):
+        """Check input values for common mistakes and return a list of warnings."""
+        warnings = []
+        if max(self.accelerations) == 0.0:
+            warnings.append("No minimum acceleration in any phase given. Very weak engines could "
+                    "be presented.")
+        elif max(self.accelerations) > 22.5:
+            warnings.append("Very high minimum acceleration required. Overthink whether you really "
+                    "need such a strong engine.")
+        if max(self.pressures) > 2.5:
+            warnings.append("Very high pressure required. If you are going to land on Eve, "
+                    "consider landing on a mountain.")
+        if self.payload > 115500:
+            # 2/3 * ((670000*8 * 195/220) / 13 - 8*24000)
+            # Two thirds of maximum weight for eight kickbacks to accelerate with 13 m/s² at 1 ATM
+            warnings.append("Your rocket is very heavy.")
+        if sum(self.delta_vs) > 7300:
+            warnings.append("You require too much Delta-v for most conventional engines. Overthink "
+                    "your mission planning.")
+        if not self.boosters and sum(self.delta_vs) > 3000 and max(self.pressures) > 0.75 \
+                and max(self.accelerations) > 9.8:
+            warnings.append("Enable solid fuel boosters if you are building a launcher.")
+        return warnings
+
     def Find(self, best_only=True, order_by_cost=False):
         all_designs = FindDesigns(self.payload,
                                   self.pressures,
