@@ -20,8 +20,9 @@ class Finder(object):
         if payload < 0.0:
             raise ValueError("Invalid payload")
         for i in range(len(delta_vs)):
+            # because of Eve, we have to support up to 5 ATM
             if delta_vs[i] <= 0.0 or accelerations[i] < 0.0 or \
-                    pressures[i] < 0.0 or pressures[i] > 1.0:
+                    pressures[i] < 0.0 or pressures[i] > 5.0:
                 raise ValueError("Invalid Delta-v tuple")
         self.payload = payload
         self.preferred_radial_size = preferred_radial_size
