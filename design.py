@@ -6,6 +6,7 @@ from math import ceil
 
 import parts
 import physics
+import techtree
 
 class Design:
     def __init__(self, payload, mainengine, mainenginecount, size):
@@ -23,8 +24,11 @@ class Design:
         self.sfbcount = 0
         self.sfbmountmass = 0
         self.performance = None # returned by physics.*_performance()
+        self.requiredscience = techtree.NodeSet()
+        self.requiredscience.add(mainengine.level)
     def AddSFB(self, sfb, sfbcount):
         self.sfb = sfb
+        self.requiredscience.add(sfb.level)
         self.sfbcount = sfbcount
         if sfbcount == 1:
             self.sfbmountmass = parts.StackstageExtraMass
@@ -162,16 +166,7 @@ class Design:
             print("\t%s: %.0f units (%.0f kg full tank mass)" % \
                     (self.specialfueltype, self.specialfuel/(self.mainengine.f_e+1)/self.specialfuelunitmass,
                         self.specialfuel))
-        if self.sfb is None:
-            req = self.mainengine.level.name
-        else:
-            if self.sfb.level.DependsOn(self.mainengine.level):
-                req = self.sfb.level.name
-            elif self.mainengine.level.DependsOn(self.sfb.level):
-                req = self.mainengine.level.name
-            else:
-                req = "%s and %s" % (self.sfb.level.name, self.mainengine.level.name)
-        print("\tRequires: %s" % req)
+        print("\tRequires: %s" % (", ".join([n.name for n in self.requiredscience.nodes])))
         print("\tRadial size: %s" % self.size.name)
         if self.mainengine.tvc != 0.0:
             print("\tGimbal: %.1f °" % self.mainengine.tvc)
@@ -189,21 +184,6 @@ class Design:
             print("\t%s" % n)
         print("\tPerformance:")
         self.PrintPerformance()
-    def MoreSophisticated(self, a):
-        # check if self uses simpler technology than a
-        if self.sfb is None and a.sfb is None:
-            return a.mainengine.level.MoreSophisticated(self.mainengine.level)
-        if self.sfb is None and a.sfb is not None:
-            return a.mainengine.level.MoreSophisticated(self.mainengine.level) and \
-                    a.sfb.level.MoreSophisticated(self.mainengine.level)
-        if self.sfb is not None and a.sfb is None:
-            return a.mainengine.level.MoreSophisticated(self.mainengine.level) or \
-                    a.mainengine.level.MoreSophisticated(self.sfb.level)
-        else:
-            return (a.mainengine.level.MoreSophisticated(self.mainengine.level) and \
-                    a.sfb.level.MoreSophisticated(self.mainengine.level)) or \
-                    (a.mainengine.level.MoreSophisticated(self.sfb.level) and \
-                    a.sfb.level.MoreSophisticated(self.sfb.level))
     def IsBetterThan(self, a, preferredsize, bestgimbal, prefergenerators, prefershortengines):
         """
         Returns True if self is better than a by any parameter, i.e. there might
@@ -234,7 +214,7 @@ class Design:
             if self.size is preferredsize and a.size is not preferredsize:
                 return True
         # to be earlier available in the game is an advantage
-        if a.MoreSophisticated(self):
+        if self.requiredscience.is_easier_than(a.requiredscience):
             return True
         return False
 

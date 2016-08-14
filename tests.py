@@ -3,11 +3,13 @@
 # Python 2.7 support.
 from __future__ import division
 
-from unittest import TestCase, main
+import doctest
+import unittest
 
+import techtree
 import physics
 
-class TestPhysics(TestCase):
+class TestPhysics(unittest.TestCase):
     def assertListAlmostEqual(self, first, second):
         if len(first) != len(second):
             raise self.failureException("List length mismatch")
@@ -70,7 +72,7 @@ class TestPhysics(TestCase):
         self.assertListEqual(r_solid, [True, True, False, False, False])
         self.assertListEqual(r_op, [0, 1, 1, 2, 2])
 
-class TestFinder(TestCase):
+class TestFinder(unittest.TestCase):
     def test_finder(self):
         """ check whether integration of kspalculator as a module works """
         from finder import Finder
@@ -81,4 +83,7 @@ class TestFinder(TestCase):
         designs = f.Find()
         self.assertEqual(len(designs), 7)
 
-main()
+fail, total = doctest.testmod(techtree)
+if fail > 0:
+    raise SystemExit("%i of %i doctests failed." % (fail, total))
+unittest.main()

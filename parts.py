@@ -5,6 +5,8 @@ from enum import Enum
 
 from collections import namedtuple
 
+from techtree import Node as ResearchNode
+
 # Source: http://wiki.kerbalspaceprogram.com/wiki/Parts, as well as in-game info
 
 kspversion = '1.1.3'
@@ -15,41 +17,6 @@ class RadialSize(Enum):
     Large = 3
     ExtraLarge = 4
     RdMntd = 9      # radially mounted
-
-class ResearchNode(Enum):
-    # only relevant nodes yet
-    Start = 11
-    BasicRocketry = 21
-    GeneralRocketry = 31
-    AdvancedRocketry = 41
-    HeavyRocketry = 51
-    PropulsionSystems = 52
-    HeavierRocketry = 61        # depends on HeavyRocketry
-    PrecisionPropulsion = 62    # depends on PropulsionSystems
-    NuclearPropulsion = 71      # depends on HeavierRocketry
-    VeryHeavyRocketry = 81      # depends on HeavierRocketry or LargeVolumeContainment
-    HyperSonicFlight = 82       # depends on Aerodynamics
-    IonPropulsion = 83          # depends on ScienceTech and UnmannedTech
-    AerospaceTech = 91          # depends on HypersonicFlight
-
-    def DependsOn(self, a):
-        # TODO: redo this, implementing engineering stuff and knowing about the tree
-        if self is a:
-            return True
-        if  (self is ResearchNode.VeryHeavyRocketry) or \
-            (self is ResearchNode.HyperSonicFlight) or \
-            (self is ResearchNode.IonPropulsion):
-            # interestingly, these nodes can be reached without having
-            # researched the other *Rocketry technologies.
-            return a is ResearchNode.Start
-        if self is ResearchNode.PrecisionPropulsion:
-            return a is ResearchNode.PropulsionSystems or a.value <= 41
-        if self is ResearchNode.AerospaceTech:
-            return (a is ResearchNode.HyperSonicFlight) or (a is ResearchNode.Start)
-        return a.value+10 <= self.value
-
-    def MoreSophisticated(self, a):
-        return self is not a and a.DependsOn(self)
 
 # A note about length of engine: We have this option, because for landers with landing legs, short
 # engines are an advantage. So which height an engine has, depends on the compatibility with landing
@@ -85,7 +52,7 @@ LiquidFuelEngines = [
         LiquidFuelEngine(RadialSize.Small, 'CR7 RAPIER',     6000, 2000, 275, 305, 180000, 3,
             ResearchNode.AerospaceTech, 0, 3),
         LiquidFuelEngine(RadialSize.Small, 'T-1 Dart',       3850, 1000, 290, 340, 180000, 0,
-            ResearchNode.HyperSonicFlight, 1, 1),
+            ResearchNode.HypersonicFlight, 1, 1),
         LiquidFuelEngine(RadialSize.Large, 'RE-L10 Poodle',  1300, 1750, 90,  350, 250000,
             4.5,ResearchNode.HeavyRocketry, 1, 2),
         LiquidFuelEngine(RadialSize.Large, 'RE-I5 Skipper',  5300, 3000, 280, 320, 650000, 2,
