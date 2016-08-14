@@ -39,10 +39,14 @@ class Finder(object):
     def lint(self):
         """Check input values for common mistakes and return a list of warnings."""
         warnings = []
+        # if these conditions are given, we assume the ship is going to be a kerbin launcher
+        kerbin_launcher = sum(self.delta_vs) >= 3400 and 1.0 in self.pressures and \
+                max(self.accelerations) > 9.8
+
         if max(self.accelerations) == 0.0:
             warnings.append("No minimum acceleration in any phase given. Very weak engines could "
                     "be presented.")
-        elif max(self.accelerations) > 22.5:
+        elif max(self.accelerations) > 22.3:
             warnings.append("Very high minimum acceleration required. Overthink whether you really "
                     "need such a strong engine.")
         if max(self.pressures) > 2.5:
@@ -55,9 +59,15 @@ class Finder(object):
         if sum(self.delta_vs) > 7300:
             warnings.append("You require too much Delta-v for most conventional engines. Overthink "
                     "your mission planning.")
-        if not self.boosters and sum(self.delta_vs) > 3000 and max(self.pressures) > 0.75 \
-                and max(self.accelerations) > 9.8:
+        elif sum(self.delta_vs) > 4600:
+            warnings.append("As you require much Delta-v, consider splitting the ship into "
+                    "multiple stages to carry fewer empty tanks.")
+        if kerbin_launcher and not self.boosters:
             warnings.append("Enable solid fuel boosters if you are building a launcher.")
+        if kerbin_launcher and max(self.accelerations) <= 10.0:
+            warnings.append("To launch from Kerbin, your minimum acceleration should be actually "
+                    "higher than the surface gravity.")
+
         return warnings
 
     def Find(self, best_only=True, order_by_cost=False):
