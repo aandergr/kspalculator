@@ -79,6 +79,6 @@ class TestFinder(TestCase):
                 [1170, 580, 580, 210, 700], [0.0, 3.3, 5.0, 0.0, 0.0], 5*[0.0],
                 False, False, False, True)
         designs = f.Find()
-        self.assertGreaterEqual(len(designs), 7)
+        self.assertEqual(len(designs), 7)
 
 main()
