@@ -35,6 +35,8 @@ class Node(Enum):
     def depends_on(self, other):
         """Returns true if other must have been researched when self is researched.
 
+        Note that x.depends_on(x) is False.
+
         >>> Node.Start.depends_on(Node.Start)
         False
         >>> Node.NuclearPropulsion.depends_on(Node.HeavyRocketry)
@@ -113,7 +115,7 @@ class NodeSet:
         """Returns true if all our nodes have to be researched for other to be researched.
 
         A is easier than B <=> for all nodes a from A there is a node b from B such that
-        b.depends_on(a).
+        b.depends_on(a), or A ⊊ B. (Note that x.depends_on(x) is False)
 
         >>> N = NodeSet()
         >>> M = NodeSet()
@@ -128,7 +130,16 @@ class NodeSet:
         False
         >>> M.is_easier_than(N)
         False
+        >>> N = NodeSet(); N.add(Node.BasicRocketry); N.add(Node.Engineering101)
+        >>> M = NodeSet(); M.add(Node.BasicRocketry)
+        >>> N.is_easier_than(M)
+        False
+        >>> M.is_easier_than(N)
+        True
         """
+
+        if self.nodes < other.nodes:
+            return True
 
         for a in self.nodes:
             for b in other.nodes:
