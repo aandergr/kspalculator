@@ -221,8 +221,6 @@ class Design:
             return True
         return False
 
-# TODO: simplify design creation even more. Overthink class Design and whole design.py
-
 def CreateSingleLFEngineDesign(payload, pressure, dv, acc, eng):
     design = Design(payload, eng, 1, eng.size)
     lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.mass, 1/8)
@@ -315,9 +313,6 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, size, count, sfb, 
         return None
     design.SetSFBLimit(acc)
     return design
-
-# TODO: add ship radially mounted fuel tank + engine combinations
-# TODO: add asparagous designs
 
 def FindDesigns(payload, pressure, dv, min_acceleration,
         preferredsize = None, bestgimbal = 0, sfballowed = False, prefergenerators = False,

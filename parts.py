@@ -74,8 +74,6 @@ LiquidFuelEngines = [
 
 FuelTank = namedtuple('FuelTank', ['size', 'cost', 'm_full'])
 
-# TODO: support adapter tanks
-
 RocketFuelTanks = [
         FuelTank(RadialSize.Tiny, 70, 225),               # 0
         FuelTank(RadialSize.Small, 150, 562.5),           # 1
@@ -95,23 +93,16 @@ BiggestTank =  { RadialSize.Tiny : 0, RadialSize.Small: 4, RadialSize.Large: 8, 
 
 SpecialEngine = namedtuple('SpecialEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac',
     'F_vac', 'tvc', 'level', 'f_e', 'electricity', 'length'])
-# TODO: overthink this. f_e is a property of the tank, not of the engine.
 
 AtomicRocketMotor = SpecialEngine(RadialSize.Small, 'LV-N Nerv Atomic Rocket Motor', 10000, 3000,
         185, 800, 60000, 0, ResearchNode.NuclearPropulsion, 5/18, 1, 3)
 AtomicTankFactor = 23/45    # Mass of full atomic fuel tank / Mass of full liquid fuel tank
 
-# TODO. Currently we only support PB-X150 Xenon Container. We should think about
-# alternative designs using the ion engine. Especially considering radially
-# mounted tanks would be easy to implement
 ElectricPropulsionSystem = SpecialEngine(RadialSize.Tiny, 'IX-6315 Dawn Electric Propulsion System',
         8000, 250, 100, 4200, 2000, 0, ResearchNode.IonPropulsion, 11/14, 0, 0)
 XenonTank = FuelTank(RadialSize.Tiny, 3600, 125)
 XenonUnitMass = 0.1
 
-# TODO: Currently, radially mounted RCS tanks are not supported, even if they
-# might be cool in some cases.
-# TODO: handling of f_e should be overthought as soon as possible.
 MonoPropellantEngines = [
         SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine (w/ FL-R10 Tanks)',
             150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 5/32, 0, 0),
