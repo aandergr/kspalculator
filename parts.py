@@ -112,7 +112,6 @@ XenonUnitMass = 0.1
 # TODO: Currently, radially mounted RCS tanks are not supported, even if they
 # might be cool in some cases.
 # TODO: handling of f_e should be overthought as soon as possible.
-# TODO: AdvFuelSystems is also needed.
 MonoPropellantEngines = [
         SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine (w/ FL-R10 Tanks)',
             150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 5/32, 0, 0),
@@ -125,6 +124,8 @@ MonoPropellantTanks = [
         FuelTank(RadialSize.Small, 600,  1150),
         FuelTank(RadialSize.Large, 1300, 3400) ]
 MonoPropellantUnitMass = 4
+MonoPropellantTankTech = ResearchNode.AdvancedFuelSystems   # NOTE that radial RCS tanks are in
+                                                            # another node.
 
 SolidFuelBooster = namedtuple('SolidFuelBooster', ['name', 'cost', 'm_full', 'm_empty', 'isp_atm', 'isp_vac', 'F_vac', 'level'])
 
@@ -138,11 +139,13 @@ SolidFuelBoosters = [
 StackstageExtraMass = 50
 StackstageExtraCost = 400
 StackstageExtraNote = "TR-18A Stack Decoupler"
+StackstageExtraTech = ResearchNode.Engineering101
 
 # Extra for radial stage
-# TODO: overthink this (maybe make it adjustable)
 # This is a very heavy but safe default setting, also having the effect of
 # reducing the count of extra radial solid fuel boosters.
 RadialstageExtraMass = 50 + 75 + 2*50
 RadialstageExtraCost = 700 + 320 + 2*42
 RadialstageExtraNote = "TT-70 Radial Decoupler, Advanced Nose Cone, 2 * EAS-4 Strut Connector"
+RadialstageExtraTech = ResearchNode.Stability   # actually TT-70 is not there, but with TT-38K the
+                                                # first radial decoupler.

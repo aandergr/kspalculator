@@ -33,11 +33,13 @@ class Design:
         if sfbcount == 1:
             self.sfbmountmass = parts.StackstageExtraMass
             self.cost = self.cost + parts.StackstageExtraCost
+            self.requiredscience.add(parts.StackstageExtraTech)
             self.notes.append("Vertically stacked %s SFB" % sfb.name)
             self.notes.append("SFB mounted on %s" % parts.StackstageExtraNote)
         else:
             self.sfbmountmass = sfbcount*parts.RadialstageExtraMass
             self.cost = self.cost + sfbcount*parts.RadialstageExtraCost
+            self.requiredscience.add(parts.RadialstageExtraTech)
             self.notes.append("Radially attached %i * %s SFB" % (sfbcount, sfb.name))
             self.notes.append("SFBs mounted on %s each" % parts.RadialstageExtraNote)
         self.mass = self.mass + self.sfbmountmass + sfbcount*sfb.m_full
@@ -101,6 +103,7 @@ class Design:
         self.specialfuelunitmass = parts.MonoPropellantUnitMass
         self.mass = self.mass + self.specialfuel
         self.cost = self.cost + tankcount*tank.cost
+        self.requiredscience.add(parts.MonoPropellantTankTech)
     def CalculatePerformance(self, dv, pressure):
         if self.sfb is None and self.liquidfuel is not None:
             # liquid fuel only
