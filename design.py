@@ -187,7 +187,7 @@ class Design:
             print("\t%s" % n)
         print("\tPerformance:")
         self.PrintPerformance()
-    def IsBetterThan(self, a, preferredsize, bestgimbal, prefergenerators, prefershortengines):
+    def IsBetterThan(self, a, preferredsize, bestgimbal, prefergenerators, prefershortengines, prefermonopropellant):
         """
         Returns True if self is better than a by any parameter, i.e. there might
         be a reason to use self instead of a.
@@ -202,8 +202,9 @@ class Design:
         elif bestgimbal >= 2:
             if self.mainengine.tvc > a.mainengine.tvc:
                 return True
-        # using monopropellant engine is always an advantage
-        if (self.specialfueltype is not None and self.specialfueltype == "MonoPropellant") and \
+        # using monopropellant engine might be an advantage
+        if prefermonopropellant and \
+                (self.specialfueltype is not None and self.specialfueltype == "MonoPropellant") and \
                 (a.specialfueltype is None or a.specialfueltype != "MonoPropellant"):
             return True
         # if user cares about whether engine generates electricity
@@ -316,7 +317,7 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, size, count, sfb, 
 
 def FindDesigns(payload, pressure, dv, min_acceleration,
         preferredsize = None, bestgimbal = 0, sfballowed = False, prefergenerators = False,
-        prefershortengines = False):
+        prefershortengines = False, prefermonopropellant = True):
     # pressure: 0 = vacuum, 1 = kerbin
     designs = []
     d = CreateAtomicRocketMotorDesign(payload, pressure, dv, min_acceleration)
@@ -372,7 +373,7 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
         d.IsBest = True
         for e in designs:
             if (d is not e) and (not d.IsBetterThan(e, preferredsize, bestgimbal, prefergenerators,
-                                                    prefershortengines)):
+                                                    prefershortengines, prefermonopropellant)):
                 d.IsBest = False
                 break
 

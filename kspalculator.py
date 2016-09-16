@@ -61,6 +61,8 @@ parser.add_argument('-g', '--gimbal', action='count', default=0,
         help='If specified once, prefer engines with gimbal (aka thrust vectoring) over engines '
         'without gimbal. If specified twice (i.e. -gg), also consider gimbal range and prefer '
         'engines with better thrust vectoring angle.')
+parser.add_argument('-m', '-r', '--monopropellant', '--rcs', action='store_true',
+        help='Prefer engines using monopropellant (RCS fuel)')
 parser.add_argument('--show-all-solutions', action='store_true', help=SUPPRESS)
 
 args = parser.parse_args()
@@ -86,7 +88,7 @@ for st in args.dvtuples:
     pr.append(0.0 if len(s) < 3 else float(s[2]))
 
 finder = Finder(args.payload, preferred_size, dv, ac, pr, args.gimbal, args.boosters,
-                args.electricity, args.length)
+                args.electricity, args.length, args.monopropellant)
 D = finder.Find(not args.show_all_solutions, args.cheapest)
 
 if not args.quiet:

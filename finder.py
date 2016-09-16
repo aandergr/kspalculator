@@ -5,7 +5,7 @@ from design import FindDesigns
 
 class Finder(object):
     def __init__(self, payload, preferred_radial_size, delta_vs, accelerations, pressures, gimbal,
-                 boosters, electricity, length):
+                 boosters, electricity, length, monopropellant):
         """Initializes this finder.
 
         Args:
@@ -35,6 +35,7 @@ class Finder(object):
         self.boosters = boosters
         self.electricity = electricity
         self.length = length
+        self.monopropellant = monopropellant
 
     def lint(self):
         """Check input values for common mistakes and return a list of warnings."""
@@ -79,7 +80,8 @@ class Finder(object):
                                   self.gimbal,
                                   self.boosters,
                                   self.electricity,
-                                  self.length)
+                                  self.length,
+                                  self.monopropellant)
 
         if best_only:
             designs = [d for d in all_designs if d.IsBest]

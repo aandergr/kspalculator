@@ -79,7 +79,7 @@ class TestFinder(unittest.TestCase):
         from parts import RadialSize
         f = Finder(1320, RadialSize.Small,
                 [1170, 580, 580, 210, 700], [0.0, 3.3, 5.0, 0.0, 0.0], 5*[0.0],
-                False, False, False, True)
+                False, False, False, True, True)
         designs = f.Find()
         self.assertEqual(len(designs), 7)
 
