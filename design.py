@@ -359,7 +359,7 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
                 designs.append(d)
             if sfballowed and eng.size is not parts.RadialSize.Tiny:
                 for sfbcount in [1, 2, 3, 4, 6, 8]:
-                    if sfbcount == 1 and size is not parts.RadialSize.Small:
+                    if sfbcount == 1 and eng.size is not parts.RadialSize.Small:
                         # would look bad
                         continue
                     for sfb in parts.SolidFuelBoosters:
