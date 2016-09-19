@@ -86,8 +86,9 @@ Small = 1.25 m, Large = 2.5 m (Rockomax), ExtraLarge = 3.75 m (Kerbodyne),
  * `--length` or `--lander`: Prefer engines which are short or radially mounted,
  * `--gimbal`: Prefer engines having gimbal. If you specify this option twice, a higher gimbal range is considered 
    better.
+ * `--rcs` or `--monopropellant`: Prefer engines using RCS fuel (monopropellant), i.e. prefer the O-10 Puff engine.
 
-In contrast to the constraints, preferences aren't hard requirements for a design suggestion to be shown up.  
+In contrast to the constraints, preferences aren't hard requirements for a design suggestion to be shown up.
 Adding preferences only adds criteria under which designs may be considered better than others. This means, 
 specifying more preferences, *more* designs will be suggested.
 
@@ -238,6 +239,11 @@ Now build one of the launchers being suggested by kspalculator and we're ready t
 
 ## Helpful Links
 
+Official web frontend for kspalculator: https://kspalculator.appspot.com/.
+
 Nice cheat sheet, especially containing maps with required Delta-v: http://wiki.kerbalspaceprogram.com/wiki/Cheat_sheet
+
+There is a [thread in the Kerbal Space Program forums](http://forum.kerbalspaceprogram.com/index.php?/topic/140434-kspalculator-determine-best-rocket-propulsion-designs-ie-engine-and-fuel-quantity-for-given-constraints/)
+about kspalculator.
 
 In case you find any problems or have suggestions, please help us improving this tool by reporting them at: https://github.com/aandergr/kspalculator/issues
