@@ -5,7 +5,7 @@ from enum import Enum
 
 from collections import namedtuple
 
-from techtree import Node as ResearchNode
+from .techtree import Node as ResearchNode
 
 # Source: http://wiki.kerbalspaceprogram.com/wiki/Parts, as well as in-game info
 

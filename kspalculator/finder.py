@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from design import FindDesigns
+from .design import FindDesigns
 
 
 class Finder(object):

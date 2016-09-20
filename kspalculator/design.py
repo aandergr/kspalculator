@@ -5,10 +5,9 @@ from __future__ import division
 import enum
 from math import ceil
 
-import parts
-import physics
-import techtree
-
+from . import parts
+from . import physics
+from . import techtree
 
 @enum.unique
 class Features(enum.Enum):

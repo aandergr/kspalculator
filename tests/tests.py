@@ -6,8 +6,8 @@ from __future__ import division
 import doctest
 import unittest
 
-import techtree
-import physics
+import kspalculator.techtree as techtree
+import kspalculator.physics as physics
 
 class TestPhysics(unittest.TestCase):
     def assertListAlmostEqual(self, first, second):
@@ -75,8 +75,8 @@ class TestPhysics(unittest.TestCase):
 class TestFinder(unittest.TestCase):
     def test_finder(self):
         """ check whether integration of kspalculator as a module works """
-        from finder import Finder
-        from parts import RadialSize
+        from kspalculator.finder import Finder
+        from kspalculator.parts import RadialSize
         f = Finder(1320, RadialSize.Small,
                 [1170, 580, 580, 210, 700], [0.0, 3.3, 5.0, 0.0, 0.0], 5*[0.0],
                 False, False, False, True, True)
