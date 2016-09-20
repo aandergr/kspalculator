@@ -45,13 +45,21 @@ Nerv Atomic Rocket Motor**, the **IX-6315 Dawn Electric Propulsion** and
 the **O-10 Puff MonoPropellant Engine**.
 
 Considered criteria to decide whether a design is better than another
-one are \* Mass, \* Cost, \* Whether it is buildable with easier
-available technology, \* Whether gimbal (thrust vectoring) is available,
-or Thrust Vectoring Range, \* Whether it uses MonoPropellant as fuel,
-which is also used by Reaction Control System (RCS) thrusters, \*
-Whether its engine generates electric power, \* The length of the
-engine, as might be meaningful when building landers, \* Whether it
-meets user's radial size preference.
+one are
+
+- Mass,
+- Cost,
+- Whether it is buildable with easier
+  available technology,
+- Whether gimbal (thrust vectoring) is available,
+  or Thrust Vectoring Range,
+- Whether it uses MonoPropellant as fuel,
+  which is also used by Reaction Control System (RCS) thrusters,
+- Whether its engine generates electric power,
+- The length of the
+  engine, as might be meaningful when building landers,
+- Whether it
+  meets user's radial size preference.
 
 Even though calculating this sounds highly sophisticated, the best
 designs are presented to the user usually within **less than a second**.
@@ -106,16 +114,21 @@ optional and default to zero.
 If you add ``--bosters``, kspalculator will consider adding solid fuel
 boosters. This is very useful for launcher stages.
 
-Options for ``preferences`` are: \*
-``--preferred-radius {tiny,small,large,extralarge}``: Preferred radius
-of the stage. Tiny = 0.625 m, Small = 1.25 m, Large = 2.5 m (Rockomax),
-ExtraLarge = 3.75 m (Kerbodyne), \* ``--electricity``: Prefer engines
-generating electricity, \* ``--length`` or ``--lander``: Prefer engines
-which are short or radially mounted, \* ``--gimbal``: Prefer engines
-having gimbal. If you specify this option twice, a higher gimbal range
-is considered better. \* ``--rcs`` or ``--monopropellant``: Prefer
-engines using RCS fuel (monopropellant), i.e. prefer the O-10 Puff
-engine.
+Options for ``preferences`` are:
+
+- ``--preferred-radius {tiny,small,large,extralarge}``: Preferred radius
+  of the stage. Tiny = 0.625 m, Small = 1.25 m, Large = 2.5 m (Rockomax),
+  ExtraLarge = 3.75 m (Kerbodyne),
+- ``--electricity``: Prefer engines
+  generating electricity,
+- ``--length`` or ``--lander``: Prefer engines
+  which are short or radially mounted,
+- ``--gimbal``: Prefer engines
+  having gimbal. If you specify this option twice, a higher gimbal range
+  is considered better.
+- ``--rcs`` or ``--monopropellant``: Prefer
+  engines using RCS fuel (monopropellant), i.e. prefer the O-10 Puff
+  engine.
 
 In contrast to the constraints, preferences aren't hard requirements for
 a design suggestion to be shown up. Adding preferences only adds
