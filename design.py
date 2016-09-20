@@ -157,13 +157,6 @@ class Design:
             if a_s[i] < min_acceleration[op[i]]:
                 return False
         return True
-    def PrintPerformance(self):
-        dv, p, a_s, a_t, m_s, m_t, solid, dummy = self.performance
-        for i in range(len(dv)):
-            p_str = ("%.2f atm" % p[i]) if p[i] > 0 else "vacuum  "
-            solid_str = "*" if solid[i] else " "
-            print("\t %s%i:  %4.0f m/s @ %s  %5.2f m/s² - %5.2f m/s²  %5.1f t - %5.1f t" % \
-                    (solid_str, i+1, dv[i], p_str, a_s[i], a_t[i], m_s[i]/1000.0, m_t[i]/1000.0))
     def SetSFBLimit(self, acc):
         # pylint: disable=unused-variable
         dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
@@ -173,37 +166,40 @@ class Design:
                 limit = acc[i]/a_s[i]
         if limit < 0.95:
             self.notes.append("You might limit SFB thrust to %.1f %%" % (ceil(limit*200)/2.0))
-    def PrintInfo(self):
+
+    def __str__(self):
+        rstr = ''
         f_yes = '      ✔ '
-        f_no  = '\t'
+        f_no = '\t'
         if self.mainenginecount == 1:
-            print("%s" % self.mainengine.name)
+            rstr += "%s\n" % self.mainengine.name
         else:
-            print("%i * %s, radially mounted" % (self.mainenginecount, self.mainengine.name))
-        print("%sTotal Mass: %.0f kg (including payload and full tanks)" %
-              (f_yes if Features.mass in self.features else f_no, self.mass))
-        print("%sCost: %.0f" %
-              (f_yes if Features.cost in self.features else f_no, self.cost))
+            rstr += "%i * %s, radially mounted\n" % (self.mainenginecount, self.mainengine.name)
+        rstr += ("%sTotal Mass: %.0f kg (including payload and full tanks)\n" %
+                 (f_yes if Features.mass in self.features else f_no, self.mass))
+        rstr += ("%sCost: %.0f\n" %
+                 (f_yes if Features.cost in self.features else f_no, self.cost))
         if self.liquidfuel is not None:
-            print("\tLiquid fuel: %.0f units (%.0f kg full tank mass)" %
-                  (self.liquidfuel*8/9*0.2, self.liquidfuel))
+            rstr += ("\tLiquid fuel: %.0f units (%.0f kg full tank mass)\n" %
+                     (self.liquidfuel * 8 / 9 * 0.2, self.liquidfuel))
         if self.specialfuel is not None:
-            print("%s%s: %.0f units (%.0f kg full tank mass)" %
-                  (f_yes if Features.monopropellant in self.features else f_no,
-                   self.specialfueltype,
-                   self.specialfuel/(self.mainengine.f_e+1)/self.specialfuelunitmass,
-                   self.specialfuel))
-        print("%sRequires: %s" %
-              (f_yes if Features.low_requirements in self.features else f_no,
-               ", ".join([n.name for n in self.requiredscience.nodes])))
-        print("%sRadial size: %s" %
-              (f_yes if Features.radial_size in self.features else f_no, self.size.name))
+            rstr += ("%s%s: %.0f units (%.0f kg full tank mass)\n" %
+                     (f_yes if Features.monopropellant in self.features else f_no,
+                      self.specialfueltype,
+                      self.specialfuel / (self.mainengine.f_e + 1) / self.specialfuelunitmass,
+                      self.specialfuel))
+        rstr += ("%sRequires: %s\n" %
+                 (f_yes if Features.low_requirements in self.features else f_no,
+                  ", ".join([n.name for n in self.requiredscience.nodes])))
+        rstr += ("%sRadial size: %s\n" %
+                 (f_yes if Features.radial_size in self.features else f_no, self.size.name))
         if self.mainengine.tvc != 0.0:
-            print("%sGimbal: %.1f °" %
-                  (f_yes if Features.gimbal in self.features else f_no, self.mainengine.tvc))
+            rstr += ("%sGimbal: %.1f °\n" %
+                     (f_yes if Features.gimbal in self.features else f_no, self.mainengine.tvc))
         if self.mainengine.electricity == 1:
-            print("%sEngine generates electricity" %
-                  (f_yes if Features.generator in self.features else f_no))
+            rstr += ("%sEngine generates electricity\n" %
+                     (f_yes if Features.generator in self.features else f_no))
+        length = None
         if self.mainengine.length == 0:
             length = "LT-05 Micro Landing Struts"
         elif self.mainengine.length == 1:
@@ -211,12 +207,20 @@ class Design:
         elif self.mainengine.length == 2:
             length = "LT-2 Landing Struts"
         if self.mainengine.length <= 2:
-            print("%sEngine is short enough to be used with %s" %
-                  (f_yes if Features.short_engine in self.features else f_no, length))
+            rstr += ("%sEngine is short enough to be used with %s\n" %
+                     (f_yes if Features.short_engine in self.features else f_no, length))
         for n in self.notes:
-            print("\t%s" % n)
-        print("\tPerformance:")
-        self.PrintPerformance()
+            rstr += "\t%s\n" % n
+        rstr += "\tPerformance:\n"
+        dv, p, a_s, a_t, m_s, m_t, solid, dummy = self.performance
+        for i in range(len(dv)):
+            p_str = ("%.2f atm" % p[i]) if p[i] > 0 else "vacuum  "
+            solid_str = "*" if solid[i] else " "
+            rstr += ("\t %s%i:  %4.0f m/s @ %s  %5.2f m/s² - %5.2f m/s²  %5.1f t - %5.1f t\n" %
+                     (solid_str, i + 1, dv[i], p_str, a_s[i], a_t[i],
+                      m_s[i] / 1000.0, m_t[i] / 1000.0))
+        return rstr
+
     def IsBetterThan(self, a, preferredsize, bestgimbal, prefergenerators, prefershortengines, prefermonopropellant):
         """
         Returns True if self is better than a by any parameter, i.e. there might

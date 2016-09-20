@@ -113,6 +113,8 @@ if not args.quiet:
         print("- You do not need engine generating electric power.")
     if not args.length:
         print("- You do not care about length of engine.")
+    if args.monopropellant:
+        print("- You prefer engines using monopropellant.")
     for warning in finder.lint():
         print(fill("WARNING: "+warning))
     print(fill("Note that these options heavily influence which engine choices are shown to you. "
@@ -120,8 +122,7 @@ if not args.quiet:
     print()
 
 for d in D:
-    d.PrintInfo()
-    print("")
+    print(d)
 
 if not args.quiet and len(D) == 0:
     print("Sorry, nothing found. Change constraints and try again.")
