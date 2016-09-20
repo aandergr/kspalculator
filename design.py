@@ -2,11 +2,26 @@
 # Python 2.7 support.
 from __future__ import division
 
+import enum
 from math import ceil
 
 import parts
 import physics
 import techtree
+
+
+@enum.unique
+class Features(enum.Enum):
+    """List of criteria by which one Design can be the best."""
+    mass = 1
+    cost = 2
+    low_requirements = 3
+    gimbal = 4
+    short_engine = 5
+    monopropellant = 6
+    generator = 7
+    radial_size = 8
+
 
 class Design:
     def __init__(self, payload, mainengine, mainenginecount, size):
@@ -26,6 +41,8 @@ class Design:
         self.performance = None # returned by physics.*_performance()
         self.requiredscience = techtree.NodeSet()
         self.requiredscience.add(mainengine.level)
+        self.features = set()
+        self.IsBest = False
     def AddSFB(self, sfb, sfbcount):
         self.sfb = sfb
         self.requiredscience.add(sfb.level)
@@ -157,24 +174,36 @@ class Design:
         if limit < 0.95:
             self.notes.append("You might limit SFB thrust to %.1f %%" % (ceil(limit*200)/2.0))
     def PrintInfo(self):
+        f_yes = '      ✔ '
+        f_no  = '\t'
         if self.mainenginecount == 1:
             print("%s" % self.mainengine.name)
         else:
             print("%i * %s, radially mounted" % (self.mainenginecount, self.mainengine.name))
-        print("\tTotal Mass: %.0f kg (including payload and full tanks)" % self.mass)
-        print("\tCost: %.0f" % self.cost)
+        print("%sTotal Mass: %.0f kg (including payload and full tanks)" %
+              (f_yes if Features.mass in self.features else f_no, self.mass))
+        print("%sCost: %.0f" %
+              (f_yes if Features.cost in self.features else f_no, self.cost))
         if self.liquidfuel is not None:
-            print("\tLiquid fuel: %.0f units (%.0f kg full tank mass)" % (self.liquidfuel*8/9*0.2, self.liquidfuel))
+            print("\tLiquid fuel: %.0f units (%.0f kg full tank mass)" %
+                  (self.liquidfuel*8/9*0.2, self.liquidfuel))
         if self.specialfuel is not None:
-            print("\t%s: %.0f units (%.0f kg full tank mass)" % \
-                    (self.specialfueltype, self.specialfuel/(self.mainengine.f_e+1)/self.specialfuelunitmass,
-                        self.specialfuel))
-        print("\tRequires: %s" % (", ".join([n.name for n in self.requiredscience.nodes])))
-        print("\tRadial size: %s" % self.size.name)
+            print("%s%s: %.0f units (%.0f kg full tank mass)" %
+                  (f_yes if Features.monopropellant in self.features else f_no,
+                   self.specialfueltype,
+                   self.specialfuel/(self.mainengine.f_e+1)/self.specialfuelunitmass,
+                   self.specialfuel))
+        print("%sRequires: %s" %
+              (f_yes if Features.low_requirements in self.features else f_no,
+               ", ".join([n.name for n in self.requiredscience.nodes])))
+        print("%sRadial size: %s" %
+              (f_yes if Features.radial_size in self.features else f_no, self.size.name))
         if self.mainengine.tvc != 0.0:
-            print("\tGimbal: %.1f °" % self.mainengine.tvc)
+            print("%sGimbal: %.1f °" %
+                  (f_yes if Features.gimbal in self.features else f_no, self.mainengine.tvc))
         if self.mainengine.electricity == 1:
-            print("\tEngine generates electricity")
+            print("%sEngine generates electricity" %
+                  (f_yes if Features.generator in self.features else f_no))
         if self.mainengine.length == 0:
             length = "LT-05 Micro Landing Struts"
         elif self.mainengine.length == 1:
@@ -182,7 +211,8 @@ class Design:
         elif self.mainengine.length == 2:
             length = "LT-2 Landing Struts"
         if self.mainengine.length <= 2:
-            print("\tEngine is short enough to be used with %s" % length)
+            print("%sEngine is short enough to be used with %s" %
+                  (f_yes if Features.short_engine in self.features else f_no, length))
         for n in self.notes:
             print("\t%s" % n)
         print("\tPerformance:")
@@ -221,6 +251,50 @@ class Design:
         if self.requiredscience.is_easier_than(a.requiredscience):
             return True
         return False
+
+    def determine_features(self, designs, preferredsize, bestgimbal, prefergenerators,
+                           prefershortengines, prefermonopropellant):
+        """Sets self.features according to properties of design.Features enum."""
+        lowest_mass = True
+        lowest_cost = True
+        lowest_requirements = True
+        best_gimbal_range = True
+        shortest_engine = True
+        for e in designs:
+            if not e.IsBest:
+                continue
+            if lowest_mass and e.mass < self.mass:
+                lowest_mass = False
+            if lowest_cost and e.cost < self.cost:
+                lowest_cost = False
+            if lowest_requirements and e.requiredscience.is_easier_than(self.requiredscience):
+                lowest_requirements = False
+            if best_gimbal_range and e.mainengine.tvc > self.mainengine.tvc:
+                best_gimbal_range = False
+            if shortest_engine and e.mainengine.length < self.mainengine.length:
+                shortest_engine = False
+        if lowest_mass:
+            self.features.add(Features.mass)
+        if lowest_cost:
+            self.features.add(Features.cost)
+        if lowest_requirements:
+            # this extra condition is false, but it looks strange if requiring 'only'
+            # VeryHeavRocketry is presented as something good
+            if techtree.Node.VeryHeavyRocketry not in self.requiredscience.nodes:
+                self.features.add(Features.low_requirements)
+        if prefershortengines and shortest_engine:
+            self.features.add(Features.short_engine)
+        if ((bestgimbal == 1 and self.mainengine.tvc > 0.0) or
+            (bestgimbal == 2 and best_gimbal_range)):
+            self.features.add(Features.gimbal)
+        if (prefermonopropellant and self.specialfueltype is not None and
+            self.specialfueltype == "MonoPropellant"):
+            self.features.add(Features.monopropellant)
+        if prefergenerators and self.mainengine.electricity:
+            self.features.add(Features.generator)
+        if preferredsize is not None and self.size is preferredsize:
+            self.features.add(Features.radial_size)
+
 
 def CreateSingleLFEngineDesign(payload, pressure, dv, acc, eng):
     design = Design(payload, eng, 1, eng.size)
@@ -376,5 +450,12 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
                                                     prefershortengines, prefermonopropellant)):
                 d.IsBest = False
                 break
+
+    # determine which are the features of d, i.e. why it is the best
+    for d in designs:
+        if not d.IsBest:
+            continue
+        d.determine_features(designs, preferredsize, bestgimbal, prefergenerators,
+                             prefershortengines, prefermonopropellant)
 
     return designs
