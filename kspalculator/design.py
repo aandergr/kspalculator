@@ -283,7 +283,8 @@ class Design:
         if lowest_requirements:
             # this extra condition is false, but it looks strange if requiring 'only'
             # VeryHeavRocketry is presented as something good
-            if techtree.Node.VeryHeavyRocketry not in self.requiredscience.nodes:
+            if (techtree.Node.VeryHeavyRocketry not in self.requiredscience.nodes and
+                techtree.Node.HypersonicFlight not in self.requiredscience.nodes):
                 self.features.add(Features.low_requirements)
         if prefershortengines and shortest_engine:
             self.features.add(Features.short_engine)
