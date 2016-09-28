@@ -28,6 +28,7 @@ class Design:
         self.cost = mainenginecount * mainengine.cost
         self.mainengine = mainengine
         self.mainenginecount = mainenginecount
+        self.lpsr = None
         self.size = size
         self.liquidfuel = None
         self.specialfuel = None
@@ -136,7 +137,7 @@ class Design:
                     pressure, self.mass - self.specialfuel, self.specialfuel/(1+f_e), f_e)
         else:
             # liquid fuel + solid fuel
-            self.performance = physics.sflf_performance(dv,
+            self.performance = physics.sflf_concurrent_performance(dv,
                     physics.engine_isp(self.mainengine, pressure),
                     physics.engine_isp(self.sfb, pressure),
                     physics.engine_force(self.mainenginecount, self.mainengine, pressure),
@@ -146,7 +147,8 @@ class Design:
                     self.liquidfuel*8/9,
                     self.sfbmountmass,
                     self.sfbcount*self.sfb.m_full,
-                    self.sfbcount*self.sfb.m_empty)
+                    self.sfbcount*self.sfb.m_empty,
+                    self.lpsr)
     def EnoughAcceleration(self, min_acceleration):
         if self.performance is None:
             return False
@@ -156,15 +158,6 @@ class Design:
             if a_s[i] < min_acceleration[op[i]]:
                 return False
         return True
-    def SetSFBLimit(self, acc):
-        # pylint: disable=unused-variable
-        dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
-        limit = 0.0
-        for i in range(len(a_s)):
-            if solid[i] and acc[i]/a_s[i] > limit:
-                limit = acc[i]/a_s[i]
-        if limit < 0.95:
-            self.notes.append("You might limit SFB thrust to %.1f %%" % (ceil(limit*200)/2.0))
 
     def __str__(self):
         rstr = ''
@@ -350,20 +343,23 @@ def CreateMonoPropellantEngineDesign(payload, pressure, dv, acc, engine, tank, c
         return None
     return design
 
-def CreateSingleLFESFBDesign(payload, pressure, dv, acc, eng, sfb, sfbcount):
+def CreateSingleLFESFBDesign(payload, pressure, dv, acc, eng, eng_F_percentage, sfb, sfbcount):
     design = Design(payload, eng, 1, eng.size)
     design.AddSFB(sfb, sfbcount)
-    lf = physics.sflf_needed_fuel(dv, physics.engine_isp(eng, pressure),
+    # lpsr = Fl * I_sps / Fs / I_spl
+    design.lpsr = eng_F_percentage * eng.F_vac * sfb.isp_vac / sfb.F_vac / eng.isp_vac
+    lf = physics.sflf_concurrent_needed_fuel(dv, physics.engine_isp(eng, pressure),
             physics.engine_isp(sfb, pressure),
             design.mass - design.sfbmountmass - sfbcount*sfb.m_full,
-            design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty)
+            design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty, design.lpsr)
     if lf is None:
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
     design.CalculatePerformance(dv, pressure)
     if not design.EnoughAcceleration(acc):
         return None
-    design.SetSFBLimit(acc)
+    if sfbcount != 1:
+        design.notes.append("Set liquid fuel engine thrust to {:.0%} while SFB are burning".format(eng_F_percentage))
     return design
 
 def CreateRadialLFEnginesDesign(payload, pressure, dv, acc, eng, size, count):
@@ -377,20 +373,23 @@ def CreateRadialLFEnginesDesign(payload, pressure, dv, acc, eng, size, count):
         return None
     return design
 
-def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, size, count, sfb, sfbcount):
+def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, eng_F_percentage, size, count, sfb, sfbcount):
     design = Design(payload, eng, count, size)
     design.AddSFB(sfb, sfbcount)
-    lf = physics.sflf_needed_fuel(dv, physics.engine_isp(eng, pressure),
+    # lpsr = Fl * I_sps / Fs / I_spl
+    design.lpsr = eng_F_percentage * eng.F_vac * sfb.isp_vac / sfb.F_vac / eng.isp_vac
+    lf = physics.sflf_concurrent_needed_fuel(dv, physics.engine_isp(eng, pressure),
             physics.engine_isp(sfb, pressure),
             design.mass - design.sfbmountmass - sfbcount*sfb.m_full,
-            design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty)
+            design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty, design.lpsr)
     if lf is None:
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
     design.CalculatePerformance(dv, pressure)
     if not design.EnoughAcceleration(acc):
         return None
-    design.SetSFBLimit(acc)
+    if sfbcount != 1:
+        design.notes.append("Set liquid fuel engine thrust to {:.0%} while SFB are burning".format(eng_F_percentage))
     return design
 
 def FindDesigns(payload, pressure, dv, min_acceleration,
@@ -428,10 +427,13 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
                                 # would look bad
                                 continue
                             for sfb in parts.SolidFuelBoosters:
-                                d = CreateRadialLFESFBDesign(payload, pressure, dv, min_acceleration,
-                                        eng, size, count, sfb, sfbcount)
-                                if d is not None:
-                                    designs.append(d)
+                                for limit in [0, 1/3, 1/2, 2/3, 1]:
+                                    d = CreateRadialLFESFBDesign(payload, pressure, dv, min_acceleration,
+                                            eng, limit, size, count, sfb, sfbcount)
+                                    if d is not None:
+                                        designs.append(d)
+                                    if sfbcount == 1:
+                                        break
         else:
             d = CreateSingleLFEngineDesign(payload, pressure, dv, min_acceleration, eng)
             if d is not None:
@@ -442,11 +444,13 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
                         # would look bad
                         continue
                     for sfb in parts.SolidFuelBoosters:
-                        d = CreateSingleLFESFBDesign(payload, pressure, dv, min_acceleration,
-                                eng, sfb, sfbcount)
-                        if d is not None:
-                            designs.append(d)
-
+                        for limit in [0, 1/3, 1/2, 2/3, 1]:
+                            d = CreateSingleLFESFBDesign(payload, pressure, dv, min_acceleration,
+                                    eng, limit, sfb, sfbcount)
+                            if d is not None:
+                                designs.append(d)
+                            if sfbcount == 1:
+                                break
     for d in designs:
         d.IsBest = True
         for e in designs:

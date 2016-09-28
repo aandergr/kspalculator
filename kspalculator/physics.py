@@ -118,6 +118,15 @@ def sflf_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t):
         f = f_adjust(m_c[current],1)
         current = (current+1)%2
 
+def sflf_concurrent_needed_fuel(dv, I_spl, I_sps, m_p, m_x, sm_s, sm_t, lpsr):
+    # lpsr: liquid-per-solid-ratio = Fl * I_sps / Fs / I_spl
+    # I_sph: Specific impulse of the combined engine when liquid and solid fuel burns simultaneously
+    I_sph = [(I_spl[k] * lpsr + I_sps[k]) / (1 + lpsr) for k in range(len(I_sps))]
+    mc_extra = (sm_s - sm_t) * lpsr
+    fuel = sflf_needed_fuel(dv, I_spl, I_sph, m_p + mc_extra * 1/8, m_x, sm_s + mc_extra, sm_t)
+    if fuel is not None:
+        return mc_extra + fuel
+
 def sflf_performance(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t):
     n = len(dv)
     r_m_t = (n+2)*[None]
@@ -157,6 +166,15 @@ def sflf_performance(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t):
     r_a_t = [(Fs[r_op[j]] if r_solid[j] else Fl[r_op[j]])/r_m_t[j] for j in range(n+2)]
     r_p = [p[r_op[j]] for j in range(n+2)]
     return r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op
+
+def sflf_concurrent_performance(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t, lpsr):
+    I_sph = [(I_spl[k] * lpsr + I_sps[k]) / (1 + lpsr) for k in range(len(I_sps))]
+    mc_extra = (sm_s - sm_t) * lpsr
+    lpsr_original = Fl[0] * I_sps[0] / Fs[0] / I_spl[0]
+    eng_F_percentage = lpsr / lpsr_original
+    return sflf_performance(dv, I_spl, I_sph, Fl,
+                            [Fs[k] + Fl[k] * eng_F_percentage for k in range(len(Fl))],
+                            p, m_p + 1/8 * mc_extra, m_c - mc_extra, m_x, sm_s + mc_extra, sm_t)
 
 def engine_isp(eng, pressure):
     return [pressure[i]*eng.isp_atm + (1-pressure[i])*eng.isp_vac for i in range(len(pressure))]
