@@ -89,5 +89,5 @@ class Finder(object):
             designs = all_designs
 
         if order_by_cost:
-            return sorted(designs, key=lambda dsg: dsg.cost)
-        return sorted(designs, key=lambda dsg: dsg.mass)
+            return sorted(designs, key=lambda dsg: dsg.get_cost())
+        return sorted(designs, key=lambda dsg: dsg.get_mass())
