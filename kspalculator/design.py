@@ -347,7 +347,7 @@ def CreateSingleLFESFBDesign(payload, pressure, dv, acc, eng, eng_F_percentage, 
     design = Design(payload, eng, 1, eng.size)
     design.AddSFB(sfb, sfbcount)
     # lpsr = Fl * I_sps / Fs / I_spl
-    lpsr = eng.F_vac * sfb.isp_vac / sfb.F_vac / eng.isp_vac
+    lpsr = eng.F_vac * sfb.isp_vac / sfbcount / sfb.F_vac / eng.isp_vac
     design.eng_F_percentage = eng_F_percentage
     lf = physics.sflf_concurrent_needed_fuel(dv, physics.engine_isp(eng, pressure),
             physics.engine_isp(sfb, pressure),
@@ -378,7 +378,7 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, eng_F_percentage, 
     design = Design(payload, eng, count, size)
     design.AddSFB(sfb, sfbcount)
     # lpsr = Fl * I_sps / Fs / I_spl
-    lpsr = eng.F_vac * sfb.isp_vac / sfb.F_vac / eng.isp_vac
+    lpsr = count * eng.F_vac * sfb.isp_vac / sfbcount / sfb.F_vac / eng.isp_vac
     design.eng_F_percentage = eng_F_percentage
     lf = physics.sflf_concurrent_needed_fuel(dv, physics.engine_isp(eng, pressure),
             physics.engine_isp(sfb, pressure),
