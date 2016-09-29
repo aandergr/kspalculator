@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .design import FindDesigns
+from .design import find_designs
 
 
 class Finder(object):
@@ -71,20 +71,20 @@ class Finder(object):
 
         return warnings
 
-    def Find(self, best_only=True, order_by_cost=False):
-        all_designs = FindDesigns(self.payload,
-                                  self.pressures,
-                                  self.delta_vs,
-                                  self.accelerations,
-                                  self.preferred_radial_size,
-                                  self.gimbal,
-                                  self.boosters,
-                                  self.electricity,
-                                  self.length,
-                                  self.monopropellant)
+    def find(self, best_only=True, order_by_cost=False):
+        all_designs = find_designs(self.payload,
+                                   self.pressures,
+                                   self.delta_vs,
+                                   self.accelerations,
+                                   self.preferred_radial_size,
+                                   self.gimbal,
+                                   self.boosters,
+                                   self.electricity,
+                                   self.length,
+                                   self.monopropellant)
 
         if best_only:
-            designs = [d for d in all_designs if d.IsBest]
+            designs = [d for d in all_designs if d.is_best]
         else:
             designs = all_designs
 

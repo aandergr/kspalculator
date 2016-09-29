@@ -42,8 +42,8 @@ class Design:
         self.requiredscience = techtree.NodeSet()
         self.requiredscience.add(mainengine.level)
         self.features = set()
-        self.IsBest = False
-    def AddSFB(self, sfb, sfbcount):
+        self.is_best = False
+    def add_sfb(self, sfb, sfbcount):
         self.sfb = sfb
         self.requiredscience.add(sfb.level)
         self.sfbcount = sfbcount
@@ -61,7 +61,7 @@ class Design:
             self.notes.append("SFBs mounted on %s each" % parts.RadialstageExtraNote)
         self.mass = self.mass + self.sfbmountmass + sfbcount*sfb.m_full
         self.cost = self.cost + sfbcount*sfb.cost
-    def AddLiquidFuelTanks(self, lf):
+    def add_liquidfuel_tanks(self, lf):
         # lf is full tank mass
         if self.mainengine.name == "LFB Twin-Boar":
             lf = max(lf, 36000)
@@ -80,7 +80,7 @@ class Design:
                 smalltankcount = smalltankcount // 2
             else:
                 self.cost = self.cost + smalltankcount * parts.RocketFuelTanks[i].cost
-    def AddAtomicFuelTanks(self, af):
+    def add_atomic_tanks(self, af):
         # af is full tank mass
         # Adomic Fuel is liquid fuel without oxidizer.
         f_f = parts.AtomicTankFactor
@@ -104,7 +104,7 @@ class Design:
                 self.cost = self.cost + smalltankcount * parts.RocketFuelTanks[i].cost
         # black magic to quit cost of saved oxidizer
         self.cost = self.cost - self.specialfuel/(1+f_e)*1.1/0.9*0.04
-    def AddXenonTanks(self, xf):
+    def add_xenon_tanks(self, xf):
         # xf is full tank mass
         tankcount = ceil(xf / parts.XenonTank.m_full)
         self.specialfuel = tankcount * parts.XenonTank.m_full
@@ -112,7 +112,7 @@ class Design:
         self.specialfuelunitmass = parts.XenonUnitMass
         self.mass = self.mass + self.specialfuel
         self.cost = self.cost + tankcount*parts.XenonTank.cost
-    def AddMonoPropellantTanks(self, mp, tank):
+    def add_monopropellant_tanks(self, mp, tank):
         # mp is full tank mass
         tankcount = ceil(mp / tank.m_full)
         self.specialfuel = tankcount * tank.m_full
@@ -121,7 +121,7 @@ class Design:
         self.mass = self.mass + self.specialfuel
         self.cost = self.cost + tankcount*tank.cost
         self.requiredscience.add(parts.MonoPropellantTankTech)
-    def CalculatePerformance(self, dv, pressure):
+    def calculate_performance(self, dv, pressure):
         if self.sfb is None and self.liquidfuel is not None:
             # liquid fuel only
             self.performance = physics.lf_performance(dv,
@@ -149,7 +149,7 @@ class Design:
                     self.sfbcount*self.sfb.m_full,
                     self.sfbcount*self.sfb.m_empty,
                     self.eng_F_percentage)
-    def EnoughAcceleration(self, min_acceleration):
+    def has_enough_acceleration(self, min_acceleration):
         if self.performance is None:
             return False
         # pylint: disable=unused-variable
@@ -213,7 +213,7 @@ class Design:
                       m_s[i] / 1000.0, m_t[i] / 1000.0))
         return rstr
 
-    def IsBetterThan(self, a, preferredsize, bestgimbal, prefergenerators, prefershortengines, prefermonopropellant):
+    def is_better_than(self, a, preferredsize, bestgimbal, prefergenerators, prefershortengines, prefermonopropellant):
         """
         Returns True if self is better than a by any parameter, i.e. there might
         be a reason to use self instead of a.
@@ -257,7 +257,7 @@ class Design:
         best_gimbal_range = True
         shortest_engine = True
         for e in designs:
-            if not e.IsBest:
+            if not e.is_best:
                 continue
             if lowest_mass and e.mass < self.mass:
                 lowest_mass = False
@@ -294,59 +294,59 @@ class Design:
             self.features.add(Features.radial_size)
 
 
-def CreateSingleLFEngineDesign(payload, pressure, dv, acc, eng):
+def create_single_lfe_design(payload, pressure, dv, acc, eng):
     design = Design(payload, eng, 1, eng.size)
     lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.mass, 1/8)
     if lf is None:
         return None
-    design.AddLiquidFuelTanks(9/8 * lf)
-    design.CalculatePerformance(dv, pressure)
-    if not design.EnoughAcceleration(acc):
+    design.add_liquidfuel_tanks(9 / 8 * lf)
+    design.calculate_performance(dv, pressure)
+    if not design.has_enough_acceleration(acc):
         return None
     return design
 
-def CreateAtomicRocketMotorDesign(payload, pressure, dv, acc):
+def create_atomic_design(payload, pressure, dv, acc):
     design = Design(payload, parts.AtomicRocketMotor, 1, parts.RadialSize.Small)
     f_e = parts.AtomicRocketMotor.f_e
     af = physics.lf_needed_fuel(dv, physics.engine_isp(parts.AtomicRocketMotor, pressure),
             design.mass, f_e)
     if af is None:
         return None
-    design.AddAtomicFuelTanks((1+f_e) * af)
-    design.CalculatePerformance(dv, pressure)
-    if not design.EnoughAcceleration(acc):
+    design.add_atomic_tanks((1 + f_e) * af)
+    design.calculate_performance(dv, pressure)
+    if not design.has_enough_acceleration(acc):
         return None
     return design
 
-def CreateElectricPropulsionSystemDesign(payload, pressure, dv, acc):
+def create_xenon_design(payload, pressure, dv, acc):
     design = Design(payload, parts.ElectricPropulsionSystem, 1, parts.RadialSize.Tiny)
     f_e = parts.ElectricPropulsionSystem.f_e
     xf = physics.lf_needed_fuel(dv, physics.engine_isp(parts.ElectricPropulsionSystem, pressure),
             design.mass, f_e)
     if xf is None:
         return None
-    design.AddXenonTanks((1+f_e) * xf)
-    design.CalculatePerformance(dv, pressure)
-    if not design.EnoughAcceleration(acc):
+    design.add_xenon_tanks((1 + f_e) * xf)
+    design.calculate_performance(dv, pressure)
+    if not design.has_enough_acceleration(acc):
         return None
     return design
 
-def CreateMonoPropellantEngineDesign(payload, pressure, dv, acc, engine, tank, count):
+def create_monopropellant_design(payload, pressure, dv, acc, engine, tank, count):
     design = Design(payload, engine, count, tank.size)
     f_e = engine.f_e
     mp = physics.lf_needed_fuel(dv, physics.engine_isp(engine, pressure),
             design.mass, f_e)
     if mp is None:
         return None
-    design.AddMonoPropellantTanks((1+f_e) * mp, tank)
-    design.CalculatePerformance(dv, pressure)
-    if not design.EnoughAcceleration(acc):
+    design.add_monopropellant_tanks((1 + f_e) * mp, tank)
+    design.calculate_performance(dv, pressure)
+    if not design.has_enough_acceleration(acc):
         return None
     return design
 
-def CreateSingleLFESFBDesign(payload, pressure, dv, acc, eng, eng_F_percentage, sfb, sfbcount):
+def create_single_lfe_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, sfb, sfbcount):
     design = Design(payload, eng, 1, eng.size)
-    design.AddSFB(sfb, sfbcount)
+    design.add_sfb(sfb, sfbcount)
     # lpsr = Fl * I_sps / Fs / I_spl
     lpsr = eng.F_vac * sfb.isp_vac / sfbcount / sfb.F_vac / eng.isp_vac
     design.eng_F_percentage = eng_F_percentage
@@ -356,28 +356,28 @@ def CreateSingleLFESFBDesign(payload, pressure, dv, acc, eng, eng_F_percentage, 
             design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty, lpsr*eng_F_percentage)
     if lf is None:
         return None
-    design.AddLiquidFuelTanks(9/8 * lf)
-    design.CalculatePerformance(dv, pressure)
-    if not design.EnoughAcceleration(acc):
+    design.add_liquidfuel_tanks(9 / 8 * lf)
+    design.calculate_performance(dv, pressure)
+    if not design.has_enough_acceleration(acc):
         return None
     if sfbcount != 1:
         design.notes.append("Set liquid fuel engine thrust to {:.0%} while SFB are burning".format(eng_F_percentage))
     return design
 
-def CreateRadialLFEnginesDesign(payload, pressure, dv, acc, eng, size, count):
+def create_radial_lfe_design(payload, pressure, dv, acc, eng, size, count):
     design = Design(payload, eng, count, size)
     lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.mass, 1/8)
     if lf is None:
         return None
-    design.AddLiquidFuelTanks(9/8 * lf)
-    design.CalculatePerformance(dv, pressure)
-    if not design.EnoughAcceleration(acc):
+    design.add_liquidfuel_tanks(9 / 8 * lf)
+    design.calculate_performance(dv, pressure)
+    if not design.has_enough_acceleration(acc):
         return None
     return design
 
-def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, eng_F_percentage, size, count, sfb, sfbcount):
+def create_radial_lfe_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, size, count, sfb, sfbcount):
     design = Design(payload, eng, count, size)
-    design.AddSFB(sfb, sfbcount)
+    design.add_sfb(sfb, sfbcount)
     # lpsr = Fl * I_sps / Fs / I_spl
     lpsr = count * eng.F_vac * sfb.isp_vac / sfbcount / sfb.F_vac / eng.isp_vac
     design.eng_F_percentage = eng_F_percentage
@@ -387,29 +387,29 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, eng_F_percentage, 
             design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty, lpsr*eng_F_percentage)
     if lf is None:
         return None
-    design.AddLiquidFuelTanks(9/8 * lf)
-    design.CalculatePerformance(dv, pressure)
-    if not design.EnoughAcceleration(acc):
+    design.add_liquidfuel_tanks(9 / 8 * lf)
+    design.calculate_performance(dv, pressure)
+    if not design.has_enough_acceleration(acc):
         return None
     if sfbcount != 1:
         design.notes.append("Set liquid fuel engine thrust to {:.0%} while SFB are burning".format(eng_F_percentage))
     return design
 
-def FindDesigns(payload, pressure, dv, min_acceleration,
-        preferredsize = None, bestgimbal = 0, sfballowed = False, prefergenerators = False,
-        prefershortengines = False, prefermonopropellant = True):
+def find_designs(payload, pressure, dv, min_acceleration,
+                 preferredsize = None, bestgimbal = 0, sfballowed = False, prefergenerators = False,
+                 prefershortengines = False, prefermonopropellant = True):
     # pressure: 0 = vacuum, 1 = kerbin
     designs = []
-    d = CreateAtomicRocketMotorDesign(payload, pressure, dv, min_acceleration)
+    d = create_atomic_design(payload, pressure, dv, min_acceleration)
     if d is not None:
         designs.append(d)
-    d = CreateElectricPropulsionSystemDesign(payload, pressure, dv, min_acceleration)
+    d = create_xenon_design(payload, pressure, dv, min_acceleration)
     if d is not None:
         designs.append(d)
     for i in range(len(parts.MonoPropellantTanks)):
         for count in [2, 3, 4, 6, 8]:
-            d = CreateMonoPropellantEngineDesign(payload, pressure, dv, min_acceleration,
-                    parts.MonoPropellantEngines[i], parts.MonoPropellantTanks[i], count)
+            d = create_monopropellant_design(payload, pressure, dv, min_acceleration,
+                                             parts.MonoPropellantEngines[i], parts.MonoPropellantTanks[i], count)
             if d is not None:
                 designs.append(d)
                 break  # do not try more engines as it wouldn't have any advantage
@@ -418,8 +418,8 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
             for size in [parts.RadialSize.Tiny, parts.RadialSize.Small,
                     parts.RadialSize.Large, parts.RadialSize.ExtraLarge]:
                 for count in [2, 3, 4, 6, 8]:
-                    d = CreateRadialLFEnginesDesign(payload, pressure, dv, min_acceleration,
-                            eng, size, count)
+                    d = create_radial_lfe_design(payload, pressure, dv, min_acceleration,
+                                                 eng, size, count)
                     if d is not None:
                         designs.append(d)
                         break   # do not try more engines
@@ -431,14 +431,14 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
                                 continue
                             for sfb in parts.SolidFuelBoosters:
                                 for limit in [0, 1/3, 1/2, 2/3, 1]:
-                                    d = CreateRadialLFESFBDesign(payload, pressure, dv, min_acceleration,
-                                            eng, limit, size, count, sfb, sfbcount)
+                                    d = create_radial_lfe_sfb_design(payload, pressure, dv, min_acceleration,
+                                                                     eng, limit, size, count, sfb, sfbcount)
                                     if d is not None:
                                         designs.append(d)
                                     if sfbcount == 1:
                                         break
         else:
-            d = CreateSingleLFEngineDesign(payload, pressure, dv, min_acceleration, eng)
+            d = create_single_lfe_design(payload, pressure, dv, min_acceleration, eng)
             if d is not None:
                 designs.append(d)
             if sfballowed and eng.size is not parts.RadialSize.Tiny:
@@ -448,23 +448,23 @@ def FindDesigns(payload, pressure, dv, min_acceleration,
                         continue
                     for sfb in parts.SolidFuelBoosters:
                         for limit in [0, 1/3, 1/2, 2/3, 1]:
-                            d = CreateSingleLFESFBDesign(payload, pressure, dv, min_acceleration,
-                                    eng, limit, sfb, sfbcount)
+                            d = create_single_lfe_sfb_design(payload, pressure, dv, min_acceleration,
+                                                             eng, limit, sfb, sfbcount)
                             if d is not None:
                                 designs.append(d)
                             if sfbcount == 1:
                                 break
     for d in designs:
-        d.IsBest = True
+        d.is_best = True
         for e in designs:
-            if (d is not e) and (not d.IsBetterThan(e, preferredsize, bestgimbal, prefergenerators,
-                                                    prefershortengines, prefermonopropellant)):
-                d.IsBest = False
+            if (d is not e) and (not d.is_better_than(e, preferredsize, bestgimbal, prefergenerators,
+                                                      prefershortengines, prefermonopropellant)):
+                d.is_best = False
                 break
 
     # determine which are the features of d, i.e. why it is the best
     for d in designs:
-        if not d.IsBest:
+        if not d.is_best:
             continue
         d.determine_features(designs, preferredsize, bestgimbal, prefergenerators,
                              prefershortengines, prefermonopropellant)
