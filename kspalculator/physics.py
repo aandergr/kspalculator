@@ -167,13 +167,12 @@ def sflf_performance(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t):
     r_p = [p[r_op[j]] for j in range(n+2)]
     return r_dv, r_p, r_a_s, r_a_t, r_m_s, r_m_t, r_solid, r_op
 
-def sflf_concurrent_performance(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t, lpsr):
+def sflf_concurrent_performance(dv, I_spl, I_sps, Fl, Fs, p, m_p, m_c, m_x, sm_s, sm_t, LFE_limit):
+    lpsr = LFE_limit * Fl[0] * I_sps[0] / Fs[0] / I_spl[0]
     I_sph = [(I_spl[k] * lpsr + I_sps[k]) / (1 + lpsr) for k in range(len(I_sps))]
     mc_extra = (sm_s - sm_t) * lpsr
-    lpsr_original = Fl[0] * I_sps[0] / Fs[0] / I_spl[0]
-    eng_F_percentage = lpsr / lpsr_original
     return sflf_performance(dv, I_spl, I_sph, Fl,
-                            [Fs[k] + Fl[k] * eng_F_percentage for k in range(len(Fl))],
+                            [Fs[k] + Fl[k] * LFE_limit for k in range(len(Fl))],
                             p, m_p + 1/8 * mc_extra, m_c - mc_extra, m_x, sm_s + mc_extra, sm_t)
 
 def engine_isp(eng, pressure):

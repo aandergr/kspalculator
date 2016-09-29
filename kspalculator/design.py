@@ -28,7 +28,7 @@ class Design:
         self.cost = mainenginecount * mainengine.cost
         self.mainengine = mainengine
         self.mainenginecount = mainenginecount
-        self.lpsr = None
+        self.eng_F_percentage = None
         self.size = size
         self.liquidfuel = None
         self.specialfuel = None
@@ -148,7 +148,7 @@ class Design:
                     self.sfbmountmass,
                     self.sfbcount*self.sfb.m_full,
                     self.sfbcount*self.sfb.m_empty,
-                    self.lpsr)
+                    self.eng_F_percentage)
     def EnoughAcceleration(self, min_acceleration):
         if self.performance is None:
             return False
@@ -347,11 +347,12 @@ def CreateSingleLFESFBDesign(payload, pressure, dv, acc, eng, eng_F_percentage, 
     design = Design(payload, eng, 1, eng.size)
     design.AddSFB(sfb, sfbcount)
     # lpsr = Fl * I_sps / Fs / I_spl
-    design.lpsr = eng_F_percentage * eng.F_vac * sfb.isp_vac / sfb.F_vac / eng.isp_vac
+    lpsr = eng.F_vac * sfb.isp_vac / sfb.F_vac / eng.isp_vac
+    design.eng_F_percentage = eng_F_percentage
     lf = physics.sflf_concurrent_needed_fuel(dv, physics.engine_isp(eng, pressure),
             physics.engine_isp(sfb, pressure),
             design.mass - design.sfbmountmass - sfbcount*sfb.m_full,
-            design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty, design.lpsr)
+            design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty, lpsr*eng_F_percentage)
     if lf is None:
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
@@ -377,11 +378,12 @@ def CreateRadialLFESFBDesign(payload, pressure, dv, acc, eng, eng_F_percentage, 
     design = Design(payload, eng, count, size)
     design.AddSFB(sfb, sfbcount)
     # lpsr = Fl * I_sps / Fs / I_spl
-    design.lpsr = eng_F_percentage * eng.F_vac * sfb.isp_vac / sfb.F_vac / eng.isp_vac
+    lpsr = eng.F_vac * sfb.isp_vac / sfb.F_vac / eng.isp_vac
+    design.eng_F_percentage = eng_F_percentage
     lf = physics.sflf_concurrent_needed_fuel(dv, physics.engine_isp(eng, pressure),
             physics.engine_isp(sfb, pressure),
             design.mass - design.sfbmountmass - sfbcount*sfb.m_full,
-            design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty, design.lpsr)
+            design.sfbmountmass, sfbcount*sfb.m_full, sfbcount*sfb.m_empty, lpsr*eng_F_percentage)
     if lf is None:
         return None
     design.AddLiquidFuelTanks(9/8 * lf)
