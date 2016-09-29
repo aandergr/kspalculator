@@ -95,28 +95,26 @@ BiggestTank =  { RadialSize.Tiny : 0, RadialSize.Small: 4, RadialSize.Large: 8, 
 TwinBoarPseudoTank = FuelTank('LFB Twin-Boar', RadialSize.Large, 5750, 36000)
 
 SpecialEngine = namedtuple('SpecialEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac',
-    'F_vac', 'tvc', 'level', 'f_e', 'electricity', 'length'])
+    'F_vac', 'tvc', 'level', 'electricity', 'length'])
+SpecialFuelTank = namedtuple('SpecialFuelTank', ['name', 'size', 'cost', 'm_full', 'f_e'])
 
 AtomicRocketMotor = SpecialEngine(RadialSize.Small, 'LV-N Nerv Atomic Rocket Motor', 10000, 3000,
-        185, 800, 60000, 0, ResearchNode.NuclearPropulsion, 5/18, 1, 3)
+        185, 800, 60000, 0, ResearchNode.NuclearPropulsion, 1, 3)
 AtomicTankFactor = 23/45    # Mass of full atomic fuel tank / Mass of full liquid fuel tank
+AtomicTank_f_e = 5/18
 
 ElectricPropulsionSystem = SpecialEngine(RadialSize.Tiny, 'IX-6315 Dawn Electric Propulsion System',
-        8000, 250, 100, 4200, 2000, 0, ResearchNode.IonPropulsion, 11/14, 0, 0)
-XenonTank = FuelTank('PB-X150', RadialSize.Tiny, 3600, 125)
+        8000, 250, 100, 4200, 2000, 0, ResearchNode.IonPropulsion, 0, 0)
+XenonTank = SpecialFuelTank('PB-X150', RadialSize.Tiny, 3600, 125, 11/14)
 XenonUnitMass = 0.1
 
-MonoPropellantEngines = [
-        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine (w/ FL-R10 Tanks)',
-            150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 5/32, 0, 0),
-        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine (w/ FL-R25 Tanks)',
-            150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 3/20, 0, 0),
-        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine (w/ FL-R1 Tanks)',
-            150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 2/15, 0, 0) ]
+MonoPropellantEngine = \
+        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine',
+            150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 0, 0)
 MonoPropellantTanks = [
-        FuelTank('FL-R10', RadialSize.Tiny,  200,  370),
-        FuelTank('FL-R25', RadialSize.Small, 600,  1150),
-        FuelTank('FL-R1',  RadialSize.Large, 1300, 3400) ]
+        SpecialFuelTank('FL-R10', RadialSize.Tiny,  200,  370, 5/32),
+        SpecialFuelTank('FL-R25', RadialSize.Small, 600,  1150, 3/20),
+        SpecialFuelTank('FL-R1',  RadialSize.Large, 1300, 3400, 2/15) ]
 MonoPropellantUnitMass = 4
 MonoPropellantTankTech = ResearchNode.AdvancedFuelSystems   # NOTE that radial RCS tanks are in
                                                             # another node.

@@ -49,7 +49,7 @@ class Design:
                       (parts.StackstageExtraCost if self.sfbcount == 1 else self.sfbcount*parts.RadialstageExtraCost)
         fuelcost = sum([tp[0]*tp[1].cost for tp in self.fueltanks])
         if self.specialfueltype == "Atomic fuel":
-            fuelcost -= self.get_fueltankmass()/(1+self.mainengine.f_e)*1.1/0.9*0.04
+            fuelcost -= self.get_fueltankmass()/(1+parts.AtomicTank_f_e)*1.1/0.9*0.04
         return self.mainenginecount*self.mainengine.cost + sfbcost + fuelcost
 
     def get_fueltankmass(self):
@@ -147,7 +147,10 @@ class Design:
                     pressure, self.get_mass() - fueltankmass, fueltankmass*8/9, 1/8)
         elif self.sfb is None and self.specialfueltype is not None:
             # atomic fuel, monopropellant or xenon
-            f_e = self.mainengine.f_e
+            if self.specialfueltype == "Atomic fuel":
+                f_e = parts.AtomicTank_f_e
+            else:
+                f_e = self.fueltanks[0][1].f_e
             self.performance = physics.lf_performance(dv,
                     physics.engine_isp(self.mainengine, pressure),
                     physics.engine_force(self.mainenginecount, self.mainengine, pressure),
@@ -194,10 +197,14 @@ class Design:
             rstr += ("\tLiquid fuel: %.0f units (%.0f kg full tank mass)\n" %
                      (fueltankmass * 8 / 9 * 0.2, fueltankmass))
         else:
+            if self.specialfueltype == "Atomic fuel":
+                f_e = parts.AtomicTank_f_e
+            else:
+                f_e = self.fueltanks[0][1].f_e
             rstr += ("%s%s: %.0f units (%.0f kg full tank mass)\n" %
                      (f_yes if Features.monopropellant in self.features else f_no,
                       self.specialfueltype,
-                      fueltankmass / (self.mainengine.f_e + 1) / self.specialfuelunitmass,
+                      fueltankmass / (f_e + 1) / self.specialfuelunitmass,
                       fueltankmass))
         rstr += "\tFuel tanks: %s\n" % ", ".join(("%i * %s" % (t[0], t[1].name) for t in self.fueltanks))
         rstr += ("%sRequires: %s\n" %
@@ -327,7 +334,7 @@ def create_single_lfe_design(payload, pressure, dv, acc, eng):
 
 def create_atomic_design(payload, pressure, dv, acc):
     design = Design(payload, parts.AtomicRocketMotor, 1, parts.RadialSize.Small)
-    f_e = parts.AtomicRocketMotor.f_e
+    f_e = parts.AtomicTank_f_e
     af = physics.lf_needed_fuel(dv, physics.engine_isp(parts.AtomicRocketMotor, pressure),
             design.get_mass(), f_e)
     if af is None:
@@ -340,7 +347,7 @@ def create_atomic_design(payload, pressure, dv, acc):
 
 def create_xenon_design(payload, pressure, dv, acc):
     design = Design(payload, parts.ElectricPropulsionSystem, 1, parts.RadialSize.Tiny)
-    f_e = parts.ElectricPropulsionSystem.f_e
+    f_e = parts.XenonTank.f_e
     xf = physics.lf_needed_fuel(dv, physics.engine_isp(parts.ElectricPropulsionSystem, pressure),
             design.get_mass(), f_e)
     if xf is None:
@@ -351,10 +358,10 @@ def create_xenon_design(payload, pressure, dv, acc):
         return None
     return design
 
-def create_monopropellant_design(payload, pressure, dv, acc, engine, tank, count):
-    design = Design(payload, engine, count, tank.size)
-    f_e = engine.f_e
-    mp = physics.lf_needed_fuel(dv, physics.engine_isp(engine, pressure),
+def create_monopropellant_design(payload, pressure, dv, acc, tank, count):
+    design = Design(payload, parts.MonoPropellantEngine, count, tank.size)
+    f_e = tank.f_e
+    mp = physics.lf_needed_fuel(dv, physics.engine_isp(parts.MonoPropellantEngine, pressure),
             design.get_mass(), f_e)
     if mp is None:
         return None
@@ -426,10 +433,10 @@ def find_designs(payload, pressure, dv, min_acceleration,
     d = create_xenon_design(payload, pressure, dv, min_acceleration)
     if d is not None:
         designs.append(d)
-    for i in range(len(parts.MonoPropellantTanks)):
+    for mptank in parts.MonoPropellantTanks:
         for count in [2, 3, 4, 6, 8]:
             d = create_monopropellant_design(payload, pressure, dv, min_acceleration,
-                                             parts.MonoPropellantEngines[i], parts.MonoPropellantTanks[i], count)
+                                             mptank, count)
             if d is not None:
                 designs.append(d)
                 break  # do not try more engines as it wouldn't have any advantage
