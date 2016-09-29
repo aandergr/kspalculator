@@ -26,8 +26,8 @@ setuptools.setup(
     packages=['kspalculator'],
     url='https://github.com/aandergr/kspalculator',
     license='MIT',
-    author='Alexander Graf',
-    author_email='mail@agraf.me',
+    author='Alexander Graf, André Koch-Kramer',
+    author_email='mail@agraf.me, koch-kramer@web.de',
     description='Determine the best rocket propulsion designs for one stage of a rocket, given a '
                 'set of constraints and preferences (Kerbal Space Program).',
     long_description=open('README.rst').read(),
