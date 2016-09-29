@@ -18,13 +18,16 @@ class Node(Enum):
     GeneralRocketry = 31
     Stability = 32
     AdvancedRocketry = 41
+    FlightControl = 42
     HeavyRocketry = 51
     PropulsionSystems = 52
     Aerodynamics = 53
+    AdvancedFlightControl = 54
     HeavierRocketry = 61
     PrecisionPropulsion = 62
     AdvancedFuelSystems = 63
     SupersonicFlight = 64
+    SpecializedControl = 65
     NuclearPropulsion = 71
     HighAltitudeFlight = 72
     VeryHeavyRocketry = 81
@@ -54,7 +57,8 @@ class Node(Enum):
                       [ Node.Start, Node.Aerodynamics, Node.SupersonicFlight,
                         Node.HighAltitudeFlight, Node.HypersonicFlight, Node.AerospaceTech ],
                       [ Node.Start, Node.Engineering101, Node.IonPropulsion ],
-                      [ Node.Start, Node.Stability ] ]
+                      [ Node.Start, Node.Stability ],
+                      [ Node.Start, Node.FlightControl, Node.AdvancedFlightControl, Node.SpecializedControl ] ]
         for depchain in DEPCHAINS:
             try:
                 if depchain.index(other) < depchain.index(self):

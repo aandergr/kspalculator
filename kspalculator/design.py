@@ -122,18 +122,23 @@ class Design:
                 smalltankcount = smalltankcount // 2
             else:
                 self.fueltanks.append((smalltankcount, parts.RocketFuelTanks[i]))
-    def add_xenon_tanks(self, xf):
+    def add_xenon_tanks(self, xf, tank):
         # xf is full tank mass
-        tankcount = ceil(xf / parts.XenonTank.m_full)
+        tankcount = ceil(xf / tank.m_full)
+        if tank.size == parts.RadialSize.RadiallyMounted:
+            tankcount = max(tankcount, 2)
         self.specialfueltype = "Xenon"
         self.specialfuelunitmass = parts.XenonUnitMass
-        self.fueltanks.append((tankcount, parts.XenonTank))
+        self.requiredscience.add(tank.level)
+        self.fueltanks.append((tankcount, tank))
     def add_monopropellant_tanks(self, mp, tank):
         # mp is full tank mass
         tankcount = ceil(mp / tank.m_full)
+        if tank.size == parts.RadialSize.RadiallyMounted:
+            tankcount = max(tankcount, 2)
         self.specialfueltype = "MonoPropellant"
         self.specialfuelunitmass = parts.MonoPropellantUnitMass
-        self.requiredscience.add(parts.MonoPropellantTankTech)
+        self.requiredscience.add(tank.level)
         self.fueltanks.append((tankcount, tank))
 
     def calculate_performance(self, dv, pressure):
@@ -270,6 +275,9 @@ class Design:
         if preferredsize is not None:
             if self.size is preferredsize and a.size is not preferredsize:
                 return True
+            if self.size is parts.RadialSize.RadiallyMounted and \
+                    (a.size is not parts.RadialSize.RadiallyMounted and a.size is not preferredsize):
+                return True
         # to be earlier available in the game is an advantage
         if self.requiredscience.is_easier_than(a.requiredscience):
             return True
@@ -317,7 +325,8 @@ class Design:
             self.features.add(Features.monopropellant)
         if prefergenerators and self.mainengine.electricity:
             self.features.add(Features.generator)
-        if preferredsize is not None and self.size is preferredsize:
+        if preferredsize is not None and \
+                (self.size is preferredsize or self.size is parts.RadialSize.RadiallyMounted):
             self.features.add(Features.radial_size)
 
 
@@ -345,14 +354,15 @@ def create_atomic_design(payload, pressure, dv, acc):
         return None
     return design
 
-def create_xenon_design(payload, pressure, dv, acc):
-    design = Design(payload, parts.ElectricPropulsionSystem, 1, parts.RadialSize.Tiny)
-    f_e = parts.XenonTank.f_e
+def create_xenon_design(payload, pressure, dv, acc, tank):
+    size = tank.size if tank.size is not parts.RadialSize.RadiallyMounted else parts.RadialSize.Tiny
+    design = Design(payload, parts.ElectricPropulsionSystem, 1, size)
+    f_e = tank.f_e
     xf = physics.lf_needed_fuel(dv, physics.engine_isp(parts.ElectricPropulsionSystem, pressure),
             design.get_mass(), f_e)
     if xf is None:
         return None
-    design.add_xenon_tanks((1 + f_e) * xf)
+    design.add_xenon_tanks((1 + f_e) * xf, tank)
     design.calculate_performance(dv, pressure)
     if not design.has_enough_acceleration(acc):
         return None
@@ -430,9 +440,10 @@ def find_designs(payload, pressure, dv, min_acceleration,
     d = create_atomic_design(payload, pressure, dv, min_acceleration)
     if d is not None:
         designs.append(d)
-    d = create_xenon_design(payload, pressure, dv, min_acceleration)
-    if d is not None:
-        designs.append(d)
+    for xetank in parts.XenonTanks:
+        d = create_xenon_design(payload, pressure, dv, min_acceleration, xetank)
+        if d is not None:
+            designs.append(d)
     for mptank in parts.MonoPropellantTanks:
         for count in [2, 3, 4, 6, 8]:
             d = create_monopropellant_design(payload, pressure, dv, min_acceleration,
@@ -441,7 +452,7 @@ def find_designs(payload, pressure, dv, min_acceleration,
                 designs.append(d)
                 break  # do not try more engines as it wouldn't have any advantage
     for eng in parts.LiquidFuelEngines:
-        if eng.size is parts.RadialSize.RdMntd:
+        if eng.size is parts.RadialSize.RadiallyMounted:
             for size in [parts.RadialSize.Tiny, parts.RadialSize.Small,
                     parts.RadialSize.Large, parts.RadialSize.ExtraLarge]:
                 for count in [2, 3, 4, 6, 8]:

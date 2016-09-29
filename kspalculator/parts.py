@@ -16,7 +16,7 @@ class RadialSize(Enum):
     Small = 2
     Large = 3
     ExtraLarge = 4
-    RdMntd = 9      # radially mounted
+    RadiallyMounted = 9      # radially mounted
 
 # A note about length of engine: We have this option, because for landers with landing legs, short
 # engines are an advantage. So which height an engine has, depends on the compatibility with landing
@@ -31,11 +31,11 @@ LiquidFuelEngine = namedtuple('LiquidFuelEngine', ['size', 'name', 'cost', 'm', 
     'isp_vac', 'F_vac', 'tvc', 'level', 'electricity', 'length'])
 
 LiquidFuelEngines = [
-        LiquidFuelEngine(RadialSize.RdMntd,'LV-1R Spider',   120,  20,   260, 290, 2000,   8,
+        LiquidFuelEngine(RadialSize.RadiallyMounted, 'LV-1R Spider', 120, 20, 260, 290, 2000, 8,
             ResearchNode.PrecisionPropulsion, 0, 0),
-        LiquidFuelEngine(RadialSize.RdMntd,'24-77 Twitch',   400,  90,   250, 290, 16000,  8,
+        LiquidFuelEngine(RadialSize.RadiallyMounted, '24-77 Twitch', 400, 90, 250, 290, 16000, 8,
             ResearchNode.PrecisionPropulsion, 0, 0),
-        LiquidFuelEngine(RadialSize.RdMntd,'Mk-55 Thud',     820,  900,  275, 305, 120000, 8,
+        LiquidFuelEngine(RadialSize.RadiallyMounted, 'Mk-55 Thud', 820, 900, 275, 305, 120000, 8,
             ResearchNode.AdvancedRocketry, 0, 0),
         LiquidFuelEngine(RadialSize.Tiny,  'LV-1 Ant',       110,  20,   80,  315, 2000,   0,
             ResearchNode.PropulsionSystems, 0, 0),
@@ -96,7 +96,7 @@ TwinBoarPseudoTank = FuelTank('LFB Twin-Boar', RadialSize.Large, 5750, 36000)
 
 SpecialEngine = namedtuple('SpecialEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac',
     'F_vac', 'tvc', 'level', 'electricity', 'length'])
-SpecialFuelTank = namedtuple('SpecialFuelTank', ['name', 'size', 'cost', 'm_full', 'f_e'])
+SpecialFuelTank = namedtuple('SpecialFuelTank', ['name', 'size', 'cost', 'm_full', 'f_e', 'level'])
 
 AtomicRocketMotor = SpecialEngine(RadialSize.Small, 'LV-N Nerv Atomic Rocket Motor', 10000, 3000,
         185, 800, 60000, 0, ResearchNode.NuclearPropulsion, 1, 3)
@@ -105,19 +105,24 @@ AtomicTank_f_e = 5/18
 
 ElectricPropulsionSystem = SpecialEngine(RadialSize.Tiny, 'IX-6315 Dawn Electric Propulsion System',
         8000, 250, 100, 4200, 2000, 0, ResearchNode.IonPropulsion, 0, 0)
-XenonTank = SpecialFuelTank('PB-X150', RadialSize.Tiny, 3600, 125, 11/14)
+XenonTanks = [
+    SpecialFuelTank('PB-X150', RadialSize.Tiny, 3600, 125, 11/14, ResearchNode.IonPropulsion),
+    SpecialFuelTank('PB-X750', RadialSize.Small, 22500, 940, 41/53, ResearchNode.IonPropulsion),
+    SpecialFuelTank('PB-X50R', RadialSize.RadiallyMounted, 2200, 70, 3 / 4, ResearchNode.IonPropulsion) ]
 XenonUnitMass = 0.1
 
 MonoPropellantEngine = \
-        SpecialEngine(RadialSize.RdMntd, 'O-10 Puff MonoPropellant Fuel Engine',
-            150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 0, 0)
+        SpecialEngine(RadialSize.RadiallyMounted, 'O-10 Puff MonoPropellant Fuel Engine',
+                      150, 90, 120, 250, 20000, 0, ResearchNode.PrecisionPropulsion, 0, 0)
 MonoPropellantTanks = [
-        SpecialFuelTank('FL-R10', RadialSize.Tiny,  200,  370, 5/32),
-        SpecialFuelTank('FL-R25', RadialSize.Small, 600,  1150, 3/20),
-        SpecialFuelTank('FL-R1',  RadialSize.Large, 1300, 3400, 2/15) ]
+        SpecialFuelTank('FL-R10', RadialSize.Tiny,  200,  370, 5/32, ResearchNode.AdvancedFuelSystems),
+        SpecialFuelTank('FL-R25', RadialSize.Small, 600,  1150, 3/20, ResearchNode.AdvancedFuelSystems),
+        SpecialFuelTank('FL-R1',  RadialSize.Large, 1300, 3400, 2/15, ResearchNode.AdvancedFuelSystems),
+        SpecialFuelTank('Stratus-V Roundified', RadialSize.RadiallyMounted, 200, 315, 5 / 16,
+                        ResearchNode.AdvancedFlightControl),
+        SpecialFuelTank('Stratus-V Cylindrified', RadialSize.RadiallyMounted, 450, 750, 1 / 4,
+                        ResearchNode.SpecializedControl) ]
 MonoPropellantUnitMass = 4
-MonoPropellantTankTech = ResearchNode.AdvancedFuelSystems   # NOTE that radial RCS tanks are in
-                                                            # another node.
 
 SolidFuelBooster = namedtuple('SolidFuelBooster', ['name', 'cost', 'm_full', 'm_empty', 'isp_atm', 'isp_vac', 'F_vac', 'level'])
 
