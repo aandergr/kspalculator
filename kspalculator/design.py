@@ -102,7 +102,8 @@ class Design:
                         self.fueltanks.append((smalltankcount, parts.RocketFuelTanks[i]))
                     self.fueltanks.append((1, parts.TwinBoarPseudoTank))
                 else:
-                    self.fueltanks.append((smalltankcount, parts.RocketFuelTanks[i]))
+                    if smalltankcount > 0:
+                        self.fueltanks.append((smalltankcount, parts.RocketFuelTanks[i]))
     def add_atomic_tanks(self, af):
         # af is full tank mass
         # Adomic Fuel is liquid fuel without oxidizer.
@@ -121,7 +122,8 @@ class Design:
                     self.fueltanks.append((1, parts.RocketFuelTanks[i]))
                 smalltankcount = smalltankcount // 2
             else:
-                self.fueltanks.append((smalltankcount, parts.RocketFuelTanks[i]))
+                if smalltankcount > 0:
+                    self.fueltanks.append((smalltankcount, parts.RocketFuelTanks[i]))
     def add_xenon_tanks(self, xf, tank):
         # xf is full tank mass
         tankcount = ceil(xf / tank.m_full)
