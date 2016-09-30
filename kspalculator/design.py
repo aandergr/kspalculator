@@ -279,6 +279,9 @@ class Design:
         # to be earlier available in the game is an advantage
         if self.requiredscience.is_easier_than(a.requiredscience):
             return True
+        if self.get_mass() == a.get_mass() and self.get_cost() == a.get_cost() \
+                and sum(self.performance[0]) > sum(a.performance[0]):
+            return True
         return False
 
     def determine_features(self, designs, preferredsize, bestgimbal, prefergenerators,
