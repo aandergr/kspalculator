@@ -29,8 +29,7 @@ class Design:
         self.mainenginecount = mainenginecount
         self.eng_F_percentage = None
         self.size = size
-        self.specialfueltype = None
-        self.specialfuelunitmass = None
+        self.fueltype = None
         self.fueltanks = [] # list of tuples (count,tank)
         self.notes = []
         self.sfb = None
@@ -48,13 +47,13 @@ class Design:
             sfbcost = self.sfbcount*self.sfb.cost + \
                       (parts.StackstageExtraCost if self.sfbcount == 1 else self.sfbcount*parts.RadialstageExtraCost)
         fuelcost = sum([tp[0]*tp[1].cost for tp in self.fueltanks])
-        if self.specialfueltype == "Atomic fuel":
+        if self.fueltype is parts.FuelTypes.AtomicFuel:
             fuelcost -= self.get_fueltankmass()/(1+parts.AtomicTank_f_e)*1.1/0.9*0.04
         return self.mainenginecount*self.mainengine.cost + sfbcost + fuelcost
 
     def get_fueltankmass(self):
         fuelmass = sum([tp[0]*tp[1].m_full for tp in self.fueltanks])
-        if self.specialfueltype == "Atomic fuel":
+        if self.fueltype is parts.FuelTypes.AtomicFuel:
             fuelmass *= parts.AtomicTankFactor
         return fuelmass
 
@@ -82,6 +81,7 @@ class Design:
             self.notes.append("SFBs mounted on %s each" % parts.RadialstageExtraNote)
     def add_liquidfuel_tanks(self, lf):
         # lf is full tank mass
+        self.fueltype = parts.FuelTypes.LiquidFuel
         if self.mainengine.name == "LFB Twin-Boar":
             lf = max(lf, 36000)
             self.notes.append("6400 units of liquid fuel are already included in the engine")
@@ -107,10 +107,9 @@ class Design:
     def add_atomic_tanks(self, af):
         # af is full tank mass
         # Adomic Fuel is liquid fuel without oxidizer.
+        self.fueltype = parts.FuelTypes.AtomicFuel
         f_f = parts.AtomicTankFactor
         smalltankcount = ceil(af / (parts.RocketFuelTanks[parts.SmallestTank[self.size]].m_full*f_f))
-        self.specialfueltype = "Atomic fuel"
-        self.specialfuelunitmass = 5
         self.notes.append("Atomic fuel is regular liquid fuel w/out oxidizer (remove oxidizer in VAB!)")
         # Fuel tank calculation:
         # We use that
@@ -126,56 +125,61 @@ class Design:
                     self.fueltanks.append((smalltankcount, parts.RocketFuelTanks[i]))
     def add_xenon_tanks(self, xf, tank):
         # xf is full tank mass
+        self.fueltype = parts.FuelTypes.Xenon
         tankcount = ceil(xf / tank.m_full)
         if tank.size == parts.RadialSize.RadiallyMounted:
             tankcount = max(tankcount, 2)
-        self.specialfueltype = "Xenon"
-        self.specialfuelunitmass = parts.XenonUnitMass
         self.requiredscience.add(tank.level)
         self.fueltanks.append((tankcount, tank))
     def add_monopropellant_tanks(self, mp, tank):
         # mp is full tank mass
+        self.fueltype = parts.FuelTypes.Monopropellant
         tankcount = ceil(mp / tank.m_full)
         if tank.size == parts.RadialSize.RadiallyMounted:
             tankcount = max(tankcount, 2)
-        self.specialfueltype = "MonoPropellant"
-        self.specialfuelunitmass = parts.MonoPropellantUnitMass
         self.requiredscience.add(tank.level)
         self.fueltanks.append((tankcount, tank))
 
+    def get_f_e(self):
+        if self.fueltype is parts.FuelTypes.LiquidFuel:
+            return 1 / 8
+        elif self.fueltype is parts.FuelTypes.AtomicFuel:
+            return parts.AtomicTank_f_e
+        else:
+            return self.fueltanks[0][1].f_e
+
     def calculate_performance(self, dv, pressure):
         fueltankmass = self.get_fueltankmass()
-        sfbmountmass = self.get_sfbmountmass()
-        if self.sfb is None and self.specialfueltype is None:
-            # liquid fuel only
-            self.performance = physics.lf_performance(dv,
-                    physics.engine_isp(self.mainengine, pressure),
-                    physics.engine_force(self.mainenginecount, self.mainengine, pressure),
-                    pressure, self.get_mass() - fueltankmass, fueltankmass*8/9, 1/8)
-        elif self.sfb is None and self.specialfueltype is not None:
+        if self.sfb is None:
+            # liquid fuel only or
             # atomic fuel, monopropellant or xenon
-            if self.specialfueltype == "Atomic fuel":
-                f_e = parts.AtomicTank_f_e
-            else:
-                f_e = self.fueltanks[0][1].f_e
-            self.performance = physics.lf_performance(dv,
-                    physics.engine_isp(self.mainengine, pressure),
-                    physics.engine_force(self.mainenginecount, self.mainengine, pressure),
-                    pressure, self.get_mass() - fueltankmass, fueltankmass/(1+f_e), f_e)
+            f_e = self.get_f_e()
+            self.performance = \
+                physics.lf_performance(dv,
+                                       physics.engine_isp(self.mainengine, pressure),
+                                       physics.engine_force(self.mainenginecount, self.mainengine,
+                                                            pressure),
+                                       pressure,
+                                       self.payload + self.mainenginecount * self.mainengine.m,
+                                       fueltankmass / (1 + f_e), f_e)
         else:
             # liquid fuel + solid fuel
-            self.performance = physics.sflf_concurrent_performance(dv,
-                    physics.engine_isp(self.mainengine, pressure),
-                    physics.engine_isp(self.sfb, pressure),
-                    physics.engine_force(self.mainenginecount, self.mainengine, pressure),
-                    physics.engine_force(self.sfbcount, self.sfb, pressure),
-                    pressure,
-                    self.get_mass() - fueltankmass - sfbmountmass - self.sfbcount*self.sfb.m_full,
-                    fueltankmass*8/9,
-                    sfbmountmass,
-                    self.sfbcount*self.sfb.m_full,
-                    self.sfbcount*self.sfb.m_empty,
-                    self.eng_F_percentage)
+            sfbmountmass = self.get_sfbmountmass()
+            self.performance = \
+                physics.sflf_concurrent_performance(dv,
+                                                    physics.engine_isp(self.mainengine, pressure),
+                                                    physics.engine_isp(self.sfb, pressure),
+                                                    physics.engine_force(self.mainenginecount,
+                                                                         self.mainengine, pressure),
+                                                    physics.engine_force(self.sfbcount, self.sfb,
+                                                                         pressure),
+                                                    pressure,
+                                                    self.payload + self.mainenginecount * self.mainengine.m,
+                                                    fueltankmass * 8 / 9,
+                                                    sfbmountmass,
+                                                    self.sfbcount * self.sfb.m_full,
+                                                    self.sfbcount * self.sfb.m_empty,
+                                                    self.eng_F_percentage)
 
     def has_enough_acceleration(self, min_acceleration):
         if self.performance is None:
@@ -200,19 +204,11 @@ class Design:
         rstr += ("%sCost: %.0f\n" %
                  (f_yes if Features.cost in self.features else f_no, self.get_cost()))
         fueltankmass = self.get_fueltankmass()
-        if self.specialfueltype is None:
-            rstr += ("\tLiquid fuel: %.0f units (%.0f kg full tank mass)\n" %
-                     (fueltankmass * 8 / 9 * 0.2, fueltankmass))
-        else:
-            if self.specialfueltype == "Atomic fuel":
-                f_e = parts.AtomicTank_f_e
-            else:
-                f_e = self.fueltanks[0][1].f_e
-            rstr += ("%s%s: %.0f units (%.0f kg full tank mass)\n" %
-                     (f_yes if Features.monopropellant in self.features else f_no,
-                      self.specialfueltype,
-                      fueltankmass / (f_e + 1) / self.specialfuelunitmass,
-                      fueltankmass))
+        rstr += ("%s%s: %.0f units (%.0f kg full tank mass)\n" %
+                 (f_yes if Features.monopropellant in self.features else f_no,
+                  self.fueltype.pname,
+                  fueltankmass / (self.get_f_e() + 1) / self.fueltype.unitmass,
+                  fueltankmass))
         rstr += "\tFuel tanks: %s\n" % ", ".join(("%i * %s" % (t[0], t[1].name) for t in self.fueltanks))
         rstr += ("%sRequires: %s\n" %
                  (f_yes if Features.low_requirements in self.features else f_no,
@@ -264,8 +260,8 @@ class Design:
                 return True
         # using monopropellant engine might be an advantage
         if prefermonopropellant and \
-                (self.specialfueltype is not None and self.specialfueltype == "MonoPropellant") and \
-                (a.specialfueltype is None or a.specialfueltype != "MonoPropellant"):
+                (self.fueltype is parts.FuelTypes.Monopropellant) and \
+                (a.fueltype is not parts.FuelTypes.Monopropellant):
             return True
         # if user cares about whether engine generates electricity
         if prefergenerators and self.mainengine.electricity == 1 and a.mainengine.electricity == 0:
@@ -322,8 +318,7 @@ class Design:
         if ((bestgimbal == 1 and self.mainengine.tvc > 0.0) or
             (bestgimbal == 2 and best_gimbal_range)):
             self.features.add(Features.gimbal)
-        if (prefermonopropellant and self.specialfueltype is not None and
-            self.specialfueltype == "MonoPropellant"):
+        if prefermonopropellant and self.fueltype is parts.FuelTypes.Monopropellant:
             self.features.add(Features.monopropellant)
         if prefergenerators and self.mainengine.electricity:
             self.features.add(Features.generator)

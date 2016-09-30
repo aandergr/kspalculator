@@ -94,6 +94,15 @@ BiggestTank =  { RadialSize.Tiny : 0, RadialSize.Small: 4, RadialSize.Large: 8, 
 
 TwinBoarPseudoTank = FuelTank('LFB Twin-Boar', RadialSize.Large, 5750, 36000)
 
+class FuelTypes(Enum):
+    LiquidFuel = ('Liquid fuel (+Oxidizer)', 5)
+    AtomicFuel = ('Atomic fuel', 5)    # atomic fuel is liquid fuel w/out oxidizer
+    Xenon = ('Xenon', 0.1)
+    Monopropellant = ('Monopropellant', 4)
+    def __init__(self, pname, unitmass):
+        self.pname = pname
+        self.unitmass = unitmass
+
 SpecialEngine = namedtuple('SpecialEngine', ['size', 'name', 'cost', 'm', 'isp_atm', 'isp_vac',
     'F_vac', 'tvc', 'level', 'electricity', 'length'])
 SpecialFuelTank = namedtuple('SpecialFuelTank', ['name', 'size', 'cost', 'm_full', 'f_e', 'level'])
@@ -109,7 +118,6 @@ XenonTanks = [
     SpecialFuelTank('PB-X150', RadialSize.Tiny, 3600, 125, 11/14, ResearchNode.IonPropulsion),
     SpecialFuelTank('PB-X750', RadialSize.Small, 22500, 940, 41/53, ResearchNode.IonPropulsion),
     SpecialFuelTank('PB-X50R', RadialSize.RadiallyMounted, 2200, 70, 3 / 4, ResearchNode.IonPropulsion) ]
-XenonUnitMass = 0.1
 
 MonoPropellantEngine = \
         SpecialEngine(RadialSize.RadiallyMounted, 'O-10 Puff MonoPropellant Fuel Engine',
@@ -122,7 +130,6 @@ MonoPropellantTanks = [
                         ResearchNode.AdvancedFlightControl),
         SpecialFuelTank('Stratus-V Cylindrified', RadialSize.RadiallyMounted, 450, 750, 1 / 4,
                         ResearchNode.SpecializedControl) ]
-MonoPropellantUnitMass = 4
 
 SolidFuelBooster = namedtuple('SolidFuelBooster', ['name', 'cost', 'm_full', 'm_empty', 'isp_atm', 'isp_vac', 'F_vac', 'level'])
 
