@@ -116,8 +116,8 @@ ElectricPropulsionSystem = SpecialEngine(RadialSize.Tiny, 'IX-6315 Dawn Electric
         8000, 250, 100, 4200, 2000, 0, ResearchNode.IonPropulsion, 0, 0)
 XenonTanks = [
     SpecialFuelTank('PB-X150', RadialSize.Tiny, 3600, 125, 11/14, ResearchNode.IonPropulsion),
-    SpecialFuelTank('PB-X750', RadialSize.Small, 22500, 940, 41/53, ResearchNode.IonPropulsion),
-    SpecialFuelTank('PB-X50R', RadialSize.RadiallyMounted, 2200, 70, 3 / 4, ResearchNode.IonPropulsion) ]
+    SpecialFuelTank('PB-X750', RadialSize.Small, 22500, 937.5, 11/14, ResearchNode.IonPropulsion),
+    SpecialFuelTank('PB-X50R', RadialSize.RadiallyMounted, 2200, 71.4, 157/200, ResearchNode.IonPropulsion) ]
 
 MonoPropellantEngine = \
         SpecialEngine(RadialSize.RadiallyMounted, 'O-10 Puff MonoPropellant Fuel Engine',
