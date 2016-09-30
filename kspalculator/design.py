@@ -319,95 +319,63 @@ class Design:
             self.features.add(Features.radial_size)
 
 
-def create_single_lfe_design(payload, pressure, dv, acc, eng):
-    design = Design(payload, eng, 1, eng.size, parts.FuelTypes.LiquidFuel)
-    lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.get_mass(), 1/8)
+def create_lf_design(payload, pressure, dv, acc, eng,
+                     size=None, count=1, fueltype=parts.FuelTypes.LiquidFuel, tank=None):
+    """Creates a simple non-SFB design with given parameters
+
+    :type eng: parts.Engine
+    :type size: parts.RadialSize
+    :type fueltype: parts.FuelTypes
+    :type tank: parts.SpecialFuelTank
+    """
+    if size is None:
+        size = eng.size
+    design = Design(payload, eng, count, size, fueltype)
+    if fueltype is parts.FuelTypes.LiquidFuel:
+        f_e = 1 / 8
+    elif fueltype is parts.FuelTypes.AtomicFuel:
+        f_e = parts.AtomicTank_f_e
+    else:
+        f_e = tank.f_e
+    lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.get_mass(), f_e)
     if lf is None:
         return None
-    design.add_conventional_tanks(9 / 8 * lf)
+    if fueltype is parts.FuelTypes.LiquidFuel or fueltype is parts.FuelTypes.AtomicFuel:
+        design.add_conventional_tanks((1 + f_e) * lf)
+    else:
+        design.add_special_tanks((1 + f_e) * lf, tank)
     design.calculate_performance(dv, pressure)
     if not design.has_enough_acceleration(acc):
         return None
     return design
+
+
+def create_single_lfe_design(payload, pressure, dv, acc, eng):
+    return create_lf_design(payload, pressure, dv, acc, eng)
 
 
 def create_radial_lfe_design(payload, pressure, dv, acc, eng, size, count):
-    design = Design(payload, eng, count, size, parts.FuelTypes.LiquidFuel)
-    lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.get_mass(), 1/8)
-    if lf is None:
-        return None
-    design.add_conventional_tanks(9 / 8 * lf)
-    design.calculate_performance(dv, pressure)
-    if not design.has_enough_acceleration(acc):
-        return None
-    return design
+    return create_lf_design(payload, pressure, dv, acc, eng, size=size, count=count)
 
 
 def create_atomic_design(payload, pressure, dv, acc):
-    design = Design(payload, parts.AtomicRocketMotor, 1, parts.RadialSize.Small, parts.FuelTypes.AtomicFuel)
-    f_e = parts.AtomicTank_f_e
-    af = physics.lf_needed_fuel(dv, physics.engine_isp(parts.AtomicRocketMotor, pressure),
-            design.get_mass(), f_e)
-    if af is None:
-        return None
-    design.add_conventional_tanks((1 + f_e) * af)
-    design.calculate_performance(dv, pressure)
-    if not design.has_enough_acceleration(acc):
-        return None
-    return design
+    return create_lf_design(payload, pressure, dv, acc, parts.AtomicRocketMotor,
+                            count=1, fueltype=parts.FuelTypes.AtomicFuel)
 
 
 def create_xenon_design(payload, pressure, dv, acc, tank):
     size = tank.size if tank.size is not parts.RadialSize.RadiallyMounted else parts.RadialSize.Tiny
-    design = Design(payload, parts.ElectricPropulsionSystem, 1, size, parts.FuelTypes.Xenon)
-    f_e = tank.f_e
-    xf = physics.lf_needed_fuel(dv, physics.engine_isp(parts.ElectricPropulsionSystem, pressure),
-            design.get_mass(), f_e)
-    if xf is None:
-        return None
-    design.add_special_tanks((1 + f_e) * xf, tank)
-    design.calculate_performance(dv, pressure)
-    if not design.has_enough_acceleration(acc):
-        return None
-    return design
+    return create_lf_design(payload, pressure, dv, acc, parts.ElectricPropulsionSystem,
+                            size=size, fueltype=parts.FuelTypes.Xenon, tank=tank)
 
 
 def create_monopropellant_design(payload, pressure, dv, acc, tank, count):
-    design = Design(payload, parts.MonoPropellantEngine, count, tank.size, parts.FuelTypes.Monopropellant)
-    f_e = tank.f_e
-    mp = physics.lf_needed_fuel(dv, physics.engine_isp(parts.MonoPropellantEngine, pressure),
-            design.get_mass(), f_e)
-    if mp is None:
-        return None
-    design.add_special_tanks((1 + f_e) * mp, tank)
-    design.calculate_performance(dv, pressure)
-    if not design.has_enough_acceleration(acc):
-        return None
-    return design
+    return create_lf_design(payload, pressure, dv, acc, parts.MonoPropellantEngine,
+                            size=tank.size, count=count, fueltype=parts.FuelTypes.Monopropellant, tank=tank)
 
 
-def create_single_lfe_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, sfb, sfbcount):
-    design = Design(payload, eng, 1, eng.size, parts.FuelTypes.LiquidFuel)
-    design.add_sfb(sfb, sfbcount)
-    # lpsr = Fl * I_sps / Fs / I_spl
-    lpsr = eng.F_vac * sfb.isp_vac / sfbcount / sfb.F_vac / eng.isp_vac
-    design.eng_F_percentage = eng_F_percentage
-    lf = physics.sflf_concurrent_needed_fuel(dv, physics.engine_isp(eng, pressure),
-            physics.engine_isp(sfb, pressure),
-            design.get_mass() - design.get_sfbmountmass() - sfbcount*sfb.m_full,
-            design.get_sfbmountmass(), sfbcount*sfb.m_full, sfbcount*sfb.m_empty, lpsr*eng_F_percentage)
-    if lf is None:
-        return None
-    design.add_conventional_tanks(9 / 8 * lf)
-    design.calculate_performance(dv, pressure)
-    if not design.has_enough_acceleration(acc):
-        return None
-    if sfbcount != 1:
-        design.notes.append("Set liquid fuel engine thrust to {:.0%} while SFB are burning".format(eng_F_percentage))
-    return design
-
-
-def create_radial_lfe_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, size, count, sfb, sfbcount):
+def create_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, size, count, sfb, sfbcount):
+    """Create LiquidFuel + SFB design with given parameters"""
     design = Design(payload, eng, count, size, parts.FuelTypes.LiquidFuel)
     design.add_sfb(sfb, sfbcount)
     # lpsr = Fl * I_sps / Fs / I_spl
@@ -426,6 +394,15 @@ def create_radial_lfe_sfb_design(payload, pressure, dv, acc, eng, eng_F_percenta
     if sfbcount != 1:
         design.notes.append("Set liquid fuel engine thrust to {:.0%} while SFB are burning".format(eng_F_percentage))
     return design
+
+
+def create_single_lfe_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, sfb, sfbcount):
+    return create_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, eng.size, 1, sfb, sfbcount)
+
+
+def create_radial_lfe_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, size, count, sfb, sfbcount):
+    return create_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, size, count, sfb, sfbcount)
+
 
 def find_designs(payload, pressure, dv, min_acceleration,
                  preferredsize = None, bestgimbal = 0, sfballowed = False, prefergenerators = False,
