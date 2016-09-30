@@ -253,7 +253,8 @@ class Design:
             return True
         # if user requires, check if we have better gimbal
         if bestgimbal == 1:
-            if self.mainengine.tvc > 0.0 and a.mainengine.tvc == 0.0:
+            if (self.sfbcount != 1 and self.mainengine.tvc > 0.0) and \
+                    (a.sfbcount == 1 or a.mainengine.tvc == 0.0):
                 return True
         elif bestgimbal >= 2:
             if self.mainengine.tvc > a.mainengine.tvc:
