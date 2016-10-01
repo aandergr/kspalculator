@@ -3,9 +3,6 @@
 import sys
 import setuptools
 
-if 'upload' in sys.argv:
-    sys.exit('Not yet ready for uploading.')
-
 if sys.version_info.major == 2:
     if sys.version_info < (2, 7):
         sys.exit('Python version not supported.')
@@ -22,7 +19,7 @@ else:
 
 setuptools.setup(
     name='kspalculator',
-    version='0.9',
+    version='0.10',
     packages=['kspalculator'],
     url='https://github.com/aandergr/kspalculator',
     license='MIT',

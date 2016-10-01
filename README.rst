@@ -22,6 +22,9 @@ by their "goodness", so there might be more than one which is the best
 at least by some criteria. This tool presents exactly *all* best
 designs.
 
+There is an official web frontend for kspalculator at:
+https://kspalculator.appspot.com/.
+
 Features
 --------
 
