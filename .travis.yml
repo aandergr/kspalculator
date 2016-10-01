@@ -9,8 +9,8 @@ install:
  - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then pip install enum34; fi
  - if [[ $TRAVIS_PYTHON_VERSION != "2.7" ]]; then pip install pylint; fi
 script:
- - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then python2 -m tests.tests -v; fi
- - if [[ $TRAVIS_PYTHON_VERSION != "2.7" ]]; then python3 -m tests.tests -v; fi
+ - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then python2 -m unittest discover -v; fi
+ - if [[ $TRAVIS_PYTHON_VERSION != "2.7" ]]; then python3 -m unittest discover -v; fi
  - if [[ $TRAVIS_PYTHON_VERSION != "2.7" ]]; then python3 -m kspalculator 1320 -R small --length 1170 580:3.3 580:5.0 310 700; fi
  - if [[ $TRAVIS_PYTHON_VERSION != "2.7" ]]; then python3 -m kspalculator 6370 --boosters --gimbal -R small 905:13:1 3650:13:0.18 -c; fi
  - if [[ $TRAVIS_PYTHON_VERSION != "2.7" ]]; then python3 -m pylint -r n -d invalid-name,bad-whitespace,bad-continuation,missing-docstring,line-too-long,fixme,too-many-arguments,consider-using-enumerate,too-many-locals,too-few-public-methods,too-many-instance-attributes,locally-disabled,too-many-return-statements,r0204,too-many-branches,too-many-nested-blocks kspalculator; fi

@@ -31,7 +31,7 @@ setuptools.setup(
     entry_points=entry_points,
     zip_safe=True,
     install_requires=install_requires,
-    test_suite="tests",
+    test_suite="test",
     keywords='ksp kerbal space program kerbalspaceprogram calculator calculate optimize engine fuel propellant',
     classifiers=[
         'Development Status :: 4 - Beta',

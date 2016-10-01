@@ -3,11 +3,10 @@
 # Python 2.7 support.
 from __future__ import division
 
-import doctest
 import unittest
 
-import kspalculator.techtree as techtree
 import kspalculator.physics as physics
+
 
 class TestPhysics(unittest.TestCase):
     def assertListAlmostEqual(self, first, second):
@@ -71,19 +70,3 @@ class TestPhysics(unittest.TestCase):
         self.assertListAlmostEqual(r_m_t, [21465.04, 18975.0, 13333.60, 10959.29, 10875.0])
         self.assertListEqual(r_solid, [True, True, False, False, False])
         self.assertListEqual(r_op, [0, 1, 1, 2, 2])
-
-class TestFinder(unittest.TestCase):
-    def test_finder(self):
-        """ check whether integration of kspalculator as a module works """
-        from kspalculator.finder import Finder
-        from kspalculator.parts import RadialSize
-        f = Finder(1320, RadialSize.Small,
-                [1170, 580, 580, 210, 700], [0.0, 3.3, 5.0, 0.0, 0.0], 5*[0.0],
-                False, False, False, True, True)
-        designs = f.find()
-        self.assertEqual(len(designs), 7)
-
-fail, total = doctest.testmod(techtree)
-if fail > 0:
-    raise SystemExit("%i of %i doctests failed." % (fail, total))
-unittest.main()
