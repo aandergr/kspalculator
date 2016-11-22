@@ -19,7 +19,7 @@ else:
 
 setuptools.setup(
     name='kspalculator',
-    version='0.10',
+    version='0.10.1',
     packages=['kspalculator'],
     url='https://github.com/aandergr/kspalculator',
     license='MIT',
