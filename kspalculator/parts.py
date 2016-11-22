@@ -9,7 +9,7 @@ from .techtree import Node as ResearchNode
 
 # Source: http://wiki.kerbalspaceprogram.com/wiki/Parts, as well as in-game info
 
-kspversion = '1.1.3'
+kspversion = '1.2.1'
 
 class RadialSize(Enum):
     Tiny = 1
@@ -31,7 +31,7 @@ Engine = namedtuple('Engine', ['size', 'name', 'cost', 'm', 'isp_atm',
     'isp_vac', 'F_vac', 'tvc', 'level', 'electricity', 'length'])
 
 LiquidFuelEngines = [
-        Engine(RadialSize.RadiallyMounted, 'LV-1R Spider', 120, 20, 260, 290, 2000, 8,
+        Engine(RadialSize.RadiallyMounted, 'LV-1R Spider', 120, 20, 260, 290, 2000, 10,
             ResearchNode.PrecisionPropulsion, 0, 0),
         Engine(RadialSize.RadiallyMounted, '24-77 Twitch', 400, 90, 250, 290, 16000, 8,
             ResearchNode.PrecisionPropulsion, 0, 0),
@@ -39,13 +39,13 @@ LiquidFuelEngines = [
             ResearchNode.AdvancedRocketry, 0, 0),
         Engine(RadialSize.Tiny,  'LV-1 Ant',       110,  20,   80,  315, 2000,   0,
             ResearchNode.PropulsionSystems, 0, 0),
-        Engine(RadialSize.Tiny,  '48-7S Spark',    200,  100,  270, 300, 18000,  3,
+        Engine(RadialSize.Tiny,  '48-7S Spark',    240,  100,  270, 320, 20000,  3,
             ResearchNode.PropulsionSystems, 0, 0),
         Engine(RadialSize.Small, 'LV-909 Terrier', 390,  500,  85,  345, 60000,  4,
             ResearchNode.AdvancedRocketry, 0, 0),
-        Engine(RadialSize.Small, 'LV-T30 Reliant', 1100, 1250, 280, 300, 215000, 0,
+        Engine(RadialSize.Small, 'LV-T30 Reliant', 1100, 1250, 265, 310, 240000, 0,
             ResearchNode.GeneralRocketry, 1, 2),
-        Engine(RadialSize.Small, 'LV-T45 Swivel',  1200, 1500, 270, 320, 200000, 3,
+        Engine(RadialSize.Small, 'LV-T45 Swivel',  1200, 1500, 250, 320, 215000, 3,
             ResearchNode.BasicRocketry, 1, 2),
         Engine(RadialSize.Small, 'S3 KS-25 Vector',18000,4000, 295, 315, 1000000, 10.5,
             ResearchNode.VeryHeavyRocketry, 1, 3),
@@ -61,7 +61,7 @@ LiquidFuelEngines = [
             ResearchNode.HeavierRocketry, 1, 3),
         Engine(RadialSize.Large, 'LFB Twin-Boar',  11250,6500, 280, 300, 2000000, 1.5,
             ResearchNode.HeavierRocketry, 0, 3),
-        Engine(RadialSize.ExtraLarge, 'KR-2L+ Rhino', 25000,9000, 255, 340, 2000000, 4,
+        Engine(RadialSize.ExtraLarge, 'KR-2L+ Rhino', 25000,9000, 205, 340, 2000000, 4,
             ResearchNode.VeryHeavyRocketry, 1, 3),
         Engine(RadialSize.ExtraLarge, 'KS-25x4 Mammoth', 39000,15000, 295, 315, 4000000, 2,
             ResearchNode.VeryHeavyRocketry, 1, 3) ]
@@ -133,7 +133,7 @@ SolidFuelBooster = namedtuple('SolidFuelBooster', ['name', 'cost', 'm_full', 'm_
 
 SolidFuelBoosters = [
         SolidFuelBooster('RT-5 Flea',    200,  1500,  450,  140, 165, 192000, ResearchNode.Start),
-        SolidFuelBooster('RT-10 Hammer', 400,  3560,  750,  170, 195, 227000, ResearchNode.BasicRocketry),
+        SolidFuelBooster('RT-10 Hammer', 400,  3562.5,752.5,170, 195, 227000, ResearchNode.BasicRocketry),
         SolidFuelBooster('BACC Thumper', 850,  7650,  1500, 175, 210, 300000, ResearchNode.GeneralRocketry),
         SolidFuelBooster('S1 Kickback',  2700, 24000, 4500, 195, 220, 670000, ResearchNode.HeavyRocketry) ]
 

@@ -72,7 +72,7 @@ Delta-v** (which might be slightly more than required, because of
 rounding to tank sizes), the **acceleration at full thrust** as well as
 the **mass** at beginning and end of each *flight phase*.
 
-(By the way, we are talking about Kerbal Space Program, version 1.1.3)
+(By the way, we are talking about Kerbal Space Program, version 1.2.1)
 
 Usage
 -----
