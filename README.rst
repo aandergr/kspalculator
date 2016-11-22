@@ -90,7 +90,16 @@ Installation
 ~~~~~~~~~~~~
 
 Make sure you have `Python <https://www.python.org/>`__, at least
-version 3.4 installed. Fetch the most recent version of kspalculator at
+version 3.4 installed.
+
+If you have `pip <https://pypi.python.org/pypi/pip>`__ installed, you
+may install kspalculator using
+
+::
+
+    pip3 install kspalculator
+
+Alternatively, fetch the most recent version of kspalculator at
 https://github.com/aandergr/kspalculator/releases. Installation is then
 done by unzipping the archive and calling
 
