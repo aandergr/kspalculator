@@ -39,8 +39,20 @@ class Design:
         self.requiredscience.add(mainengine.level)
         self.features = set()
         self.is_best = False
+        # determined by get_cost and get_mass respectively
+        self._final_mass = None
+        self._final_cost = None
 
     def get_cost(self):
+        """Returns total cost of the Design.
+
+        This function must not be called until design creation is completed, i.e. all tanks, SFBs, etc. are added, as
+        the value is cached once determined.
+
+        :return: total cost of the Design
+        """
+        if self._final_cost is not None:
+            return self._final_cost
         if self.sfb is None:
             sfbcost = 0
         else:
@@ -49,7 +61,8 @@ class Design:
         fuelcost = sum([tp[0]*tp[1].cost for tp in self.fueltanks])
         if self.fueltype is parts.FuelTypes.AtomicFuel:
             fuelcost -= self.get_fueltankmass()/(1+parts.AtomicTank_f_e)*1.1/0.9*0.04
-        return self.mainenginecount*self.mainengine.cost + sfbcost + fuelcost
+        self._final_cost = self.mainenginecount*self.mainengine.cost + sfbcost + fuelcost
+        return self._final_cost
 
     def get_fueltankmass(self):
         fuelmass = sum([tp[0]*tp[1].m_full for tp in self.fueltanks])
@@ -61,11 +74,21 @@ class Design:
         return parts.StackstageExtraMass if self.sfbcount == 1 else self.sfbcount*parts.RadialstageExtraMass
 
     def get_mass(self):
+        """Returns total mass of the Design.
+
+        This function must not be called until design creation is completed, i.e. all tanks, SFBs, etc. are added, as
+        the value is cached once determined.
+
+        :return: total mass of the Design
+        """
+        if self._final_mass is not None:
+            return self._final_mass
         if self.sfb is None:
             sfbmass = 0
         else:
             sfbmass = self.sfbcount*self.sfb.m_full + self.get_sfbmountmass()
-        return self.payload + self.mainenginecount*self.mainengine.m + sfbmass + self.get_fueltankmass()
+        self._final_mass = self.payload + self.mainenginecount * self.mainengine.m + sfbmass + self.get_fueltankmass()
+        return self._final_mass
 
     def add_sfb(self, sfb, sfbcount):
         self.sfb = sfb
@@ -337,7 +360,8 @@ def create_lf_design(payload, pressure, dv, acc, eng,
         f_e = parts.AtomicTank_f_e
     else:
         f_e = tank.f_e
-    lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), design.get_mass(), f_e)
+    m_p = payload + count*eng.m
+    lf = physics.lf_needed_fuel(dv, physics.engine_isp(eng, pressure), m_p, f_e)
     if lf is None:
         return None
     if fueltype is parts.FuelTypes.LiquidFuel or fueltype is parts.FuelTypes.AtomicFuel:
@@ -381,10 +405,12 @@ def create_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, size, c
     # lpsr = Fl * I_sps / Fs / I_spl
     lpsr = count * eng.F_vac * sfb.isp_vac / sfbcount / sfb.F_vac / eng.isp_vac
     design.eng_F_percentage = eng_F_percentage
+    m_p = payload + count*eng.m
     lf = physics.sflf_concurrent_needed_fuel(dv, physics.engine_isp(eng, pressure),
-            physics.engine_isp(sfb, pressure),
-            design.get_mass() - design.get_sfbmountmass() - sfbcount*sfb.m_full,
-            design.get_sfbmountmass(), sfbcount*sfb.m_full, sfbcount*sfb.m_empty, lpsr*eng_F_percentage)
+                                             physics.engine_isp(sfb, pressure),
+                                             m_p,
+                                             design.get_sfbmountmass(), sfbcount * sfb.m_full, sfbcount * sfb.m_empty,
+                                             lpsr * eng_F_percentage)
     if lf is None:
         return None
     design.add_conventional_tanks(9 / 8 * lf)
