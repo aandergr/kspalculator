@@ -38,7 +38,8 @@ class Design:
         self.requiredscience = techtree.NodeSet()
         self.requiredscience.add(mainengine.level)
         self.features = set()
-        self.is_best = False
+        self.is_best = True # First, assume all designs are best designs; When evaluation is done, this variable might
+                            # set to False.
         # determined by get_cost and get_mass respectively
         self._final_mass = None
         self._final_cost = None
@@ -490,11 +491,12 @@ def find_designs(payload, pressure, dv, min_acceleration,
                                 designs.append(d)
                             if sfbcount == 1:
                                 break
+
+    # Compare designs and decide which ones are the best ones
     for d in designs:
-        d.is_best = True
         for e in designs:
-            if (d is not e) and (not d.is_better_than(e, preferredsize, bestgimbal, prefergenerators,
-                                                      prefershortengines, prefermonopropellant)):
+            if (d is not e) and e.is_best and (not d.is_better_than(e, preferredsize, bestgimbal, prefergenerators,
+                                                                    prefershortengines, prefermonopropellant)):
                 d.is_best = False
                 break
 
