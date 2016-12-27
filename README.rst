@@ -9,7 +9,7 @@ propulsion designs for one stage of a rocket, given a set of
 fulfilled. These are the possible payload and the Delta-v as well as the
 minimum acceleration which is reached in an environment with given air
 pressure. *Preferences* are further properties a propulsion design might
-fulfil in order to be preferred. Examples for preferences are the thrust
+fulfill in order to be preferred. Examples for preferences are the thrust
 vectoring angle, the radial size, whether the engine is able to generate
 electric power, etc.
 
@@ -28,7 +28,7 @@ https://kspalculator.appspot.com/.
 Features
 --------
 
-kspalculator evaluates all possible designs, checks whether they fulfil
+kspalculator evaluates all possible designs, checks whether they fulfill
 the user's requirements, and then checks whether it is the best design
 using the relation "*A* is better than *B* iff *A* is better than *B* by
 *any* of the user's criteria". Only the **best designs** are then
@@ -123,7 +123,7 @@ m/s, acceleration in m/s² and environment pressure in ATM (0.0 = vacuum,
 specify at least one of these tuples. Acceleration and pressure are
 optional and default to zero.
 
-If you add ``--bosters``, kspalculator will consider adding solid fuel
+If you add ``--boosters``, kspalculator will consider adding solid fuel
 boosters. This is very useful for launcher stages.
 
 Options for ``preferences`` are:
@@ -315,7 +315,7 @@ determine best launcher designs:
 
 The asterisks in the performance tables indicate that the phase of
 flight is done by solid fuel boosters. The SFB thrust limit suggestion
-is the minimum thrust required to fulfil your acceleration constraints.
+is the minimum thrust required to fulfill your acceleration constraints.
 
 Now build one of the launchers being suggested by kspalculator and we're
 ready to do a giant leap for kerbinkind.
