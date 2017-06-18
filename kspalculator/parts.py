@@ -9,7 +9,7 @@ from .techtree import Node as ResearchNode
 
 # Source: http://wiki.kerbalspaceprogram.com/wiki/Parts, as well as in-game info
 
-kspversion = '1.2.1'
+kspversion = '1.3 / 1.2'
 
 class RadialSize(Enum):
     Tiny = 1
