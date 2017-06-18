@@ -125,7 +125,7 @@ def main():
     for d in D:
         print(d)
 
-    if not args.quiet and len(D) == 0:
+    if not args.quiet and not D:
         print("Sorry, nothing found. Change constraints and try again.")
 
 if __name__ == '__main__':

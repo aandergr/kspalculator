@@ -112,7 +112,7 @@ class NodeSet:
             if not node.depends_on(newnode):
                 self.nodes.add(newnode)
                 return
-        if len(self.nodes) == 0:
+        if not self.nodes:
             self.nodes.add(newnode)
 
     def is_easier_than(self, other):

@@ -157,8 +157,7 @@ class Design:
             return 1 / 8
         elif self.fueltype is parts.FuelTypes.AtomicFuel:
             return parts.AtomicTank_f_e
-        else:
-            return self.fueltanks[0][1].f_e
+        return self.fueltanks[0][1].f_e
 
     def calculate_performance(self, dv, pressure):
         fueltankmass = self.get_fueltankmass()
