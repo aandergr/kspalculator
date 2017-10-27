@@ -4,7 +4,7 @@ from .design import find_designs
 
 
 class Finder(object):
-    def __init__(self, payload, preferred_radial_size, delta_vs, accelerations, pressures, gimbal,
+    def __init__(self, payload, preferred_radial_size, delta_vs, accelerations, pressures, sfb_allowed, gimbal,
                  boosters, electricity, length, monopropellant):
         """Initializes this finder.
 
@@ -14,6 +14,7 @@ class Finder(object):
             delta_vs ([float]) - Array of delta-V requirements.
             accelerations ([float]) - Array of acceleration requirements.
             pressures ([float]) - Array of pressure requirements.
+            sfb_allowed ([boolean]) - Array of whether SFB are allowed in this flight phase.
             gimbal (boolean) - Whether or not to prefer thrust vectoring engines.
             boosters (boolean) - Whether or not to include solid boosters.
             electricity (boolean) - Whether or not to prefer engines that generate power.
@@ -31,6 +32,7 @@ class Finder(object):
         self.delta_vs = delta_vs
         self.accelerations = accelerations
         self.pressures = pressures
+        self.sfb_allowed = sfb_allowed
         self.gimbal = gimbal
         self.boosters = boosters
         self.electricity = electricity
@@ -69,6 +71,11 @@ class Finder(object):
             warnings.append("To launch from Kerbin, your minimum acceleration should be actually "
                     "higher than the surface gravity.")
 
+        sfb_dv_allowed = sum(self.delta_vs[x] for x in range(len(self.delta_vs)) if self.sfb_allowed[x])
+        if kerbin_launcher and sfb_dv_allowed > 1700:
+            warnings.append("Solid fuel boosters cannot be shut off for coasting mid-flight during "
+                    "launch.  Consider restricting which flight phases they can be used in.")
+
         return warnings
 
     def find(self, best_only=True, order_by_cost=False):
@@ -76,6 +83,7 @@ class Finder(object):
                                    self.pressures,
                                    self.delta_vs,
                                    self.accelerations,
+                                   self.sfb_allowed,
                                    self.preferred_radial_size,
                                    self.gimbal,
                                    self.boosters,

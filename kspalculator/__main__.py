@@ -20,6 +20,11 @@ def positive_float(string):
         raise ArgumentTypeError("%r is not positive" % string)
     return fl
 
+def to_boolean(string):
+    if string.lower() not in ['t', 'true', '1', 'y', 'yes', 'f', 'false', '0', 'n', 'no', '']:
+        raise ArgumentTypeError("%r is not a boolean (true/false)" % string)
+    return string.lower() in ['t', 'true', '1', 'y', 'yes']
+
 def dvtuple(string):
     spl = string.split(':')
     positive_float(spl[0])
@@ -28,6 +33,8 @@ def dvtuple(string):
     if len(spl) > 2:
         nonnegative_float(spl[2])
     if len(spl) > 3:
+        to_boolean(spl[3])
+    if len(spl) > 4:
         raise ArgumentTypeError("%r contains too many ':'" % string)
     return string
 
@@ -39,10 +46,12 @@ def main():
 
     parser = ArgumentParser(description=summary, epilog=epilog)
     parser.add_argument('payload', type=nonnegative_float, help='Payload in kg')
-    parser.add_argument('dvtuples', type=dvtuple, metavar='deltav[:min_acceleration[:pressure]]', nargs='+',
-            help='Tuples of required delta v (in m/s), minimum acceleration (in m/s²) and environment '
-            'pressure (0.0 = vacuum, 1.0 = ATM) at each flight phase. Default for minimum acceleration '
-            'is 0 m/s², default for pressure is vacuum.')
+    parser.add_argument('dvtuples', type=dvtuple,
+            metavar='deltav[:min_acceleration[:pressure[:sfb_allowed]]]', nargs='+',
+            help='Tuples of required delta v (in m/s), minimum acceleration (in m/s²), environment '
+            'pressure (0.0 = vacuum, 1.0 = ATM), and whether solid fuel boosters are allowed (t/f) '
+            'at each flight phase. Default for minimum acceleration is 0 m/s², default for pressure '
+            'is vacuum, and default for sfb allowed is true.')
     parser.add_argument('-V', '--version', action='version',
             version=('kspalculator version %s, for KSP version %s.' % (get_version(), kspversion)))
     parser.add_argument('-q', '--quiet', action='store_true', help='Do not print prologue')
@@ -82,13 +91,15 @@ def main():
     dv = []
     ac = []
     pr = []
+    sa = []
     for st in args.dvtuples:
         s = st.split(':')
         dv.append(float(s[0]))
         ac.append(0.0 if len(s) < 2 else float(s[1]))
         pr.append(0.0 if len(s) < 3 else float(s[2]))
+        sa.append(True if len(s) < 4 else s[3].lower() in ['t', 'true', '1', 'y', 'yes'])
 
-    finder = Finder(args.payload, preferred_size, dv, ac, pr, args.gimbal, args.boosters,
+    finder = Finder(args.payload, preferred_size, dv, ac, pr, sa, args.gimbal, args.boosters,
                     args.electricity, args.length, args.monopropellant)
     D = finder.find(not args.show_all_solutions, args.cheapest)
 

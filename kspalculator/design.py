@@ -202,6 +202,16 @@ class Design:
                 return False
         return True
 
+    def sfb_burning_when_allowed(self, sfb_allowed):
+        if self.performance is None:
+            return False
+        # pylint: disable=unused-variable
+        dv, p, a_s, a_t, m_s, m_t, solid, op = self.performance
+        for i in range(len(solid)):
+            if solid[i] and not sfb_allowed[op[i]]:
+                return False
+        return True
+
     def __str__(self):
         rstr = ''
         f_yes = '      ✔ '
@@ -398,7 +408,7 @@ def create_monopropellant_design(payload, pressure, dv, acc, tank, count):
                             size=tank.size, count=count, fueltype=parts.FuelTypes.Monopropellant, tank=tank)
 
 
-def create_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, size, count, sfb, sfbcount):
+def create_sfb_design(payload, pressure, dv, acc, sfb_allowed, eng, eng_F_percentage, size, count, sfb, sfbcount):
     """Create LiquidFuel + SFB design with given parameters"""
     design = Design(payload, eng, count, size, parts.FuelTypes.LiquidFuel)
     design.add_sfb(sfb, sfbcount)
@@ -417,20 +427,22 @@ def create_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, size, c
     design.calculate_performance(dv, pressure)
     if not design.has_enough_acceleration(acc):
         return None
+    if not design.sfb_burning_when_allowed(sfb_allowed):
+        return None
     if sfbcount != 1:
         design.notes.append("Set liquid fuel engine thrust to {:.0%} while SFB are burning".format(eng_F_percentage))
     return design
 
 
-def create_single_lfe_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, sfb, sfbcount):
-    return create_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, eng.size, 1, sfb, sfbcount)
+def create_single_lfe_sfb_design(payload, pressure, dv, acc, sfb_allowed, eng, eng_F_percentage, sfb, sfbcount):
+    return create_sfb_design(payload, pressure, dv, acc, sfb_allowed, eng, eng_F_percentage, eng.size, 1, sfb, sfbcount)
 
 
-def create_radial_lfe_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, size, count, sfb, sfbcount):
-    return create_sfb_design(payload, pressure, dv, acc, eng, eng_F_percentage, size, count, sfb, sfbcount)
+def create_radial_lfe_sfb_design(payload, pressure, dv, acc, sfb_allowed, eng, eng_F_percentage, size, count, sfb, sfbcount):
+    return create_sfb_design(payload, pressure, dv, acc, sfb_allowed, eng, eng_F_percentage, size, count, sfb, sfbcount)
 
 
-def find_designs(payload, pressure, dv, min_acceleration,
+def find_designs(payload, pressure, dv, min_acceleration, sfb_allowed,
                  preferredsize = None, bestgimbal = 0, sfballowed = False, prefergenerators = False,
                  prefershortengines = False, prefermonopropellant = True):
     # pressure: 0 = vacuum, 1 = kerbin
@@ -467,7 +479,7 @@ def find_designs(payload, pressure, dv, min_acceleration,
                                 continue
                             for sfb in parts.SolidFuelBoosters:
                                 for limit in [0, 1/3, 1/2, 2/3, 1]:
-                                    d = create_radial_lfe_sfb_design(payload, pressure, dv, min_acceleration,
+                                    d = create_radial_lfe_sfb_design(payload, pressure, dv, min_acceleration, sfb_allowed,
                                                                      eng, limit, size, count, sfb, sfbcount)
                                     if d is not None:
                                         designs.append(d)
@@ -484,7 +496,7 @@ def find_designs(payload, pressure, dv, min_acceleration,
                         continue
                     for sfb in parts.SolidFuelBoosters:
                         for limit in [0, 1/3, 1/2, 2/3, 1]:
-                            d = create_single_lfe_sfb_design(payload, pressure, dv, min_acceleration,
+                            d = create_single_lfe_sfb_design(payload, pressure, dv, min_acceleration, sfb_allowed,
                                                              eng, limit, sfb, sfbcount)
                             if d is not None:
                                 designs.append(d)
