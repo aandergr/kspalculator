@@ -3,8 +3,7 @@ python:
  - "2.7"
  - "3.4"
  - "3.5"
- - "3.5-dev"
- - "nightly"
+ - "3.6"
 install:
  - if [[ $TRAVIS_PYTHON_VERSION == "2.7" ]]; then pip install enum34; fi
  - if [[ $TRAVIS_PYTHON_VERSION != "2.7" ]]; then pip install pylint; fi
@@ -14,3 +13,11 @@ script:
  - if [[ $TRAVIS_PYTHON_VERSION != "2.7" ]]; then python3 -m kspalculator 1320 -R small --length 1170 580:3.3 580:5.0 310 700; fi
  - if [[ $TRAVIS_PYTHON_VERSION != "2.7" ]]; then python3 -m kspalculator 6370 --boosters --gimbal -R small 905:13:1 3650:13:0.18 -c; fi
  - if [[ $TRAVIS_PYTHON_VERSION != "2.7" ]]; then python3 -m pylint -r n -d invalid-name,bad-whitespace,bad-continuation,missing-docstring,line-too-long,fixme,too-many-arguments,consider-using-enumerate,too-many-locals,too-few-public-methods,too-many-instance-attributes,locally-disabled,too-many-return-statements,too-many-branches,too-many-nested-blocks kspalculator; fi
+deploy:
+  provider: pypi
+  user: aandergr
+  on:
+    tags: true
+    python: 3.6
+  password:
+    secure: jyR/qHxT4P/c6kO9qy9YCIIcm9ttLIFfkqMt7EGRTgOMEyzKBigxSEKvLpFBcAxmap0a6VnfyXGUdeVr/jHud6V9MZhQrRPQqhRkZKWubGjdkeDuevSM3WNhznZE6Nah1DN1Fdw8EECAhyh8yzk6bYoEv62I0NEqBGi+881q1JSQQ5kICF6jhnDcufmII7cukdpWup02IZYlXICFyySy19uzielxQw0j2Rsq4PgNyFOSlnSJOy2C1yoawkQtWPaCQrPkMUvUmXDNHUaDRv44HTx2Xt1PYQW5Z0CaIlevEm/jtH9+ME5KfIRbvaSwnXibFAZ5r/XHxrPlOtzeZfJWWd1sZbhdqUZGEkteSiOjFT2IZ+/A8Ezhio5JVVHy5u+f8cJeQ1G7q1fAUNuUZsl26bDBYAONmdy6IkRkVVmUQp3L/aB23rwhX7SwbYS0zpmJ6deWLwGTYdXWTSQ3rfl0XuU/0FzAbgYLl6xfuEq0rBElE3P+GkOyJE1MDrMwLTfMUNwIN+kZ/+JVw4lQHKBp9JyVwCfHAxhs1UiM6sQIe6GnZ3Tlx9KiH0IKGhZspAKBO9C6tVlzIJj9ejXv6IXAZ1/daoFfUVgi0sH0vk21rYobRg8EDu5HY4MJFFTK9opBlZ/yHM1YJa6rc5okVjpXQrZWhKwUpt9Z6wIOkNouCeI=
