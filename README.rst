@@ -1,6 +1,8 @@
 kspalculator
 ============
 
+.. intro-start
+
 **kspalculator** is a tool which determines the **best** rocket
 propulsion designs for one stage of a rocket, given a set of
 **constraints** and **preferences**.
@@ -22,11 +24,15 @@ by their "goodness", so there might be more than one which is the best
 at least by some criteria. This tool presents exactly *all* best
 designs.
 
+.. intro-end
+
 There is an official web frontend for kspalculator at:
 https://kspalculator.appspot.com/.
 
 Features
 --------
+
+.. features-start
 
 kspalculator evaluates all possible designs, checks whether they fulfill
 the user's requirements, and then checks whether it is the best design
@@ -72,7 +78,7 @@ Delta-v** (which might be slightly more than required, because of
 rounding to tank sizes), the **acceleration at full thrust** as well as
 the **mass** at beginning and end of each *flight phase*.
 
-(By the way, we are talking about Kerbal Space Program, version 1.2.1)
+.. features-end
 
 Usage
 -----
@@ -88,6 +94,8 @@ basic concepts don't vary.
 
 Installation
 ~~~~~~~~~~~~
+
+.. cli-installation-start
 
 Make sure you have `Python <https://www.python.org/>`__, at least
 version 3.4 installed.
@@ -107,8 +115,12 @@ done by unzipping the archive and calling
 
     python3 setup.py install
 
+.. cli-installation-end
+
 Basic Usage
 ~~~~~~~~~~~
+
+.. cli-usage-start
 
 kspalculator is invoked on the command line. Syntax is
 
@@ -159,8 +171,12 @@ two if you allow boosters, where the first is a stage only utilizing
 solid fuel boosters). It will never split up your design into multiple
 stages.
 
+.. cli-usage-end
+
 Example
 ~~~~~~~
+
+.. example-start
 
 Imagine we build a light Mun lander, having a payload of 1320 kg. That
 is a Mk1 Command Pod, four LT-05 Landing Struts, a Parachute, a Heat
@@ -320,8 +336,12 @@ is the minimum thrust required to fulfill your acceleration constraints.
 Now build one of the launchers being suggested by kspalculator and we're
 ready to do a giant leap for kerbinkind.
 
+.. example-end
+
 Helpful Links
 -------------
+
+.. links-start
 
 Official web frontend for kspalculator:
 https://kspalculator.appspot.com/.
@@ -336,3 +356,5 @@ about kspalculator.
 In case you find any problems or have suggestions, please help us
 improving this tool by reporting them at:
 https://github.com/aandergr/kspalculator/issues
+
+.. links-end
