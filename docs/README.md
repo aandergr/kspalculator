@@ -3,7 +3,7 @@
 This directory contains sources for the kspalculator documentation.
 
 The documentation is hosted at:
-https://kspalculator.readthedocs.org/
+https://kspalculator.readthedocs.io/
 
 ## Build
 

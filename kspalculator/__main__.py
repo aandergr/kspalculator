@@ -5,7 +5,7 @@ from textwrap import fill
 
 from .finder import Finder
 from .parts import RadialSize, kspversion
-from . import __version__ as get_version
+from . import __version__ as kspalculator_version
 from . import __doc__ as summary
 
 def nonnegative_float(string):
@@ -53,7 +53,7 @@ def main():
             'at each flight phase. Default for minimum acceleration is 0 m/s², default for pressure '
             'is vacuum, and default for sfb allowed is true.')
     parser.add_argument('-V', '--version', action='version',
-            version=('kspalculator version %s, for KSP version %s.' % (get_version(), kspversion)))
+            version=('kspalculator version %s, for KSP version %s.' % (kspalculator_version, kspversion)))
     parser.add_argument('-q', '--quiet', action='store_true', help='Do not print prologue')
     parser.add_argument('-c', '--cheapest', action='store_true',
             help='Sort by cost instead of weight')
